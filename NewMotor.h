@@ -6,7 +6,7 @@ using namespace std;
 #define vpfor(it, v)   \
 	for(auto* it : v)
 #define vrfor(it, v)   \ 
-	for(auto& it : v)
+for (auto& it : v)
 #define vrep(it, v) \
 	for(int it = 0; it < v.size(); it++)
 #define prop(obj, name) \
@@ -14,6 +14,13 @@ using namespace std;
 #ifndef CHAIN
 #define CHAIN return *this
 #endif
+
+namespace vex { 
+	class motor; 
+	enum class directionType;
+	enum class percentUnits;
+}
+using namespace vex;
 template <class motor_type = vex::motor>
 class NewMotor {
 	int size = 0;
@@ -45,8 +52,18 @@ public:
 		}
 		return *this;
 	}
-	NewMotor<motor_type>& spin(directionType dir, int velocity, int n) {
+	NewMotor<motor_type>& spin(const directionType& dir, int velocity, int n) {
 		m[n]->spin(dir, velocity, pct);
+		return *this;
+	}
+	NewMotor<motor_type>& spinVolt(const directionType& dir, int velocity) {
+		for (auto n : m) {
+			n->spin(dir, velocity * 0.12, volt);
+		}
+		return *this;
+	}
+	NewMotor<motor_type>& spinVolt(directionType dir, int velocity, int n) {
+		m[n]->spin(dir, velocity * 12.0 / 100.0, volt);
 		return *this;
 	}
 	NewMotor<motor_type>& seperateSpin(vector<int> speeds) {

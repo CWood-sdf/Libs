@@ -342,7 +342,7 @@ union PVector {
     chain_method operator*= (double d) {
         x *= d;
         y *= d;
-        x *= d;
+        z *= d;
         CHAIN
     }
     PVector operator/ (double dd) {
