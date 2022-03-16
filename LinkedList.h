@@ -602,6 +602,16 @@ public:
 	void setCurrent(Node& n) {
 		current = &n;
 	}
+	void moveCurrentLeft() {
+		if (!empty() && current != base) {
+			current = current->prev;
+		}
+	}
+	void moveCurrentRight() {
+		if (!empty() && current != endn) {
+			current = current->next;
+		}
+	}
 	List& operator= (List& llist) {
 		destructor();
 		constructor(llist);
