@@ -803,7 +803,7 @@ protected:
 		deletable = false;
 	}*/
 public:
-	_Tp val;
+	_Tp val = _Tp();
 	ListNode(Node* base, Node*& endn) : val(base->val) {
 		if (base->next != NULL) {
 			next = new Node(base->next, endn);
