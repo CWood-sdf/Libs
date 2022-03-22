@@ -396,5 +396,7 @@ union PVector {
     bool operator!=(PVector v) {
         return !operator==(v);
     }
-
+    operator lv_point_t() {
+        return { (int)x, (int)y };
+    }
 };
