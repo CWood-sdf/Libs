@@ -8,6 +8,7 @@
 #ifndef CHAIN
 #define CHAIN return *this;
 #endif
+#include <stdexcept>
 //Macro that prints out a vector in conjunction with cout
 #define VECT_OUT(v) v.x << ", " << v.y << ", " << v.z
 #define VECT_XY(v) v.x << ", " << v.y
@@ -397,6 +398,6 @@ union PVector {
         return !operator==(v);
     }
     operator lv_point_t() {
-        return { (short)x, (short)y };
+        return { (short)std::round(x), (short)std::round(y) };
     }
 };
