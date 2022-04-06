@@ -383,11 +383,6 @@ union PVector {
         newV.z = z + v.z;
         return newV;
     }
-    PVector& operator|| (PVector v) {
-        if (!((bool)x) && !((bool)(y)))
-            return v;
-        return *this;
-    }
     bool operator==(PVector v) {
         return x == v.x && y == v.y && z == v.z;
     }
