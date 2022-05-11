@@ -121,9 +121,7 @@ double RS = Y2;  \
 BL.spin(directionType::fwd, LS, pct);                   \
 BR.spin(directionType::fwd, RS, pct);                   \
 ;
-void s(int time) {
-    task::sleep(time);
-}
+
 
 #define DRIVE_OMNI \
 double Y1 = abs(Greg.Axis3.value()) > sensitivity? Greg.Axis3.value() : 0;  \
@@ -141,6 +139,10 @@ wheelSpin(0, 0);    \
 #define randomSeed timer::systemHighResolution()
 #endif
 
+#ifndef NO_MAKE
+void s(int time) {
+    task::sleep(time);
+}
 template<typename Number>
 string parseInt(Number n) {
 
@@ -162,3 +164,12 @@ template<>
 string parseInt<const char*>(const char* n) {
     return n;
 }
+#else 
+void s(int);
+template<typename Number>
+string parseInt(Number n);
+template<>
+string parseInt<string>(string n);
+template<>
+string parseInt<const char*>(const char* n);
+#endif

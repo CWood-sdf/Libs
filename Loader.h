@@ -1,6 +1,7 @@
 #pragma once
 
 union PVector;
+#ifndef NO_MAKE
 void windowsLoader (){
     static PVector pos = PVector(0.0, 0.0);
     static PVector velocity = PVector(1.5, 1.5);
@@ -31,3 +32,6 @@ void windowsLoader (){
     }
   //}
 }
+#else 
+void windowsLoader();
+#endif
