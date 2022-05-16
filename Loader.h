@@ -2,7 +2,7 @@
 
 union PVector;
 #ifndef NO_MAKE
-void windowsLoader (){
+void windowsLoader (bool){
     static PVector pos = PVector(0.0, 0.0);
     static PVector velocity = PVector(1.5, 1.5);
   //while(1) {
