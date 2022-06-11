@@ -43,6 +43,7 @@ public:
 	NewMotor() {
 		m = vector<motor_type*>();
 	}
+	NewMotor(const NewMotor<>&) = default;
 	motor_type& operator[](int n) {
 		return *m[n];
 	}
