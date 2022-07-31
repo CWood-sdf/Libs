@@ -65,7 +65,7 @@ union PVector {
     PVector(std::initializer_list<double> l) {
         int i = 0;
         if (l.size() > 3) {
-            std::range_error("Out of size PVector initializer list (> 3 elements)");
+            throw std::range_error("Out of size PVector initializer list (> 3 elements)");
         }
         for (double s : l) {
             arr[i] = s;
@@ -368,7 +368,7 @@ union PVector {
     chain_method operator=(std::initializer_list<double> l) {
         int i = 0;
         if (l.size() > 3) {
-            std::range_error("Out of size PVector initializer list (> 3 elements)");
+            throw std::range_error("Out of size PVector initializer list (> 3 elements)");
         }
         for (double s : l) {
             arr[i] = s;
@@ -392,7 +392,10 @@ union PVector {
     bool operator!=(PVector v) {
         return !operator==(v);
     }
-    operator lv_point_t() {
-        return { (short)std::round(x), (short)std::round(y) };
+	template<typename T, class VType = decltype(T::x)>
+    operator T () {
+        return { 
+            static_cast<VType>(std::round(x)), 
+            static_cast<VType>(std::round(y)) };
     }
 };
