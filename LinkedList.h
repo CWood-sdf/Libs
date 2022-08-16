@@ -402,7 +402,7 @@ public:
 		}
 
 	}
-	void add(unsigned int amnt) {
+	/*void add(unsigned int amnt) {
 		while (amnt-- > 0) {
 			add();
 		}
@@ -421,7 +421,7 @@ public:
 		if (current == NULL) {
 			current = endn;
 		}
-	}
+	}*/
 
 	template<typename Arg1, typename Arg2, typename ... Args>
 	void push_back(Arg1 a1, Arg2 a2, Args... args) {
@@ -743,6 +743,9 @@ private:
 					return false;
 				}
 			}
+      else if (!l2.getNext().exists()) {
+        return true;
+      }
 		}
 		//if list vals don't match
 		return false;
@@ -755,6 +758,15 @@ public:
 		}
 		return comp(getBase(), l.getBase());
 	}
+  bool operator==(List&& l) {
+    return operator==(l);
+  }
+  bool operator!=(List& l) {
+    return !operator==(l);
+  }
+  bool operator!=(List&& l) {
+    return !operator==(l);
+  }
 	/*operator BasicLinkedList<_Tp&>() {
 		BasicLinkedList<_Tp&> ret;
 		for (auto& i : *this) {
