@@ -59,8 +59,9 @@ protected:
 	bool bound = false;
 
 public:
-	void push(_Tp& val) {
-		Node* newEnd = new Node(val);
+  template<bool tempVal>
+  void basicPush(_Tp& val);/* {
+		Node* newEnd = isTempVal ? new Node(std::move(val)) : new Node(val);
 		if (endn == NULL) {
 			base = endn = current = newEnd;
 		}
@@ -73,7 +74,47 @@ public:
 		if (current == NULL) {
 			current = endn;
 		}
-	}
+	}*/
+  template<>
+  void basicPush<true>(_Tp& val) {
+    Node* newEnd = new Node(std::move(val));
+    if (endn == NULL) {
+      base = endn = current = newEnd;
+    }
+    else {
+      endn->next = newEnd;
+      newEnd->prev = endn;
+      endn = newEnd;
+
+    }
+    if (current == NULL) {
+      current = endn;
+    }
+  }
+  template<>
+  void basicPush<false>(_Tp& val) {
+    Node* newEnd = new Node(val);
+    if (endn == NULL) {
+      base = endn = current = newEnd;
+    }
+    else {
+      endn->next = newEnd;
+      newEnd->prev = endn;
+      endn = newEnd;
+
+    }
+    if (current == NULL) {
+      current = endn;
+    }
+  }
+  void push(_Tp& val) {
+    basicPush<false>(val);
+  }
+  void movePush(_Tp& val) {
+    basicPush<true>(val);
+  }
+  
+  
 	//Iterators
 	Iterator begin() {
 		reset();
@@ -434,7 +475,7 @@ public:
 	inline typename std::enable_if<
 		!std::is_same<_Tp, r*&>::value, void>::type
 	 push_back(_Tp&& val) {
-		push_back(val);
+    movePush(val);
 
 	}
 	void push_back(Node& n) {
@@ -828,6 +869,9 @@ public:
 	ListNode(_Tp& val) : val(val) {
 
 	}
+  ListNode(_Tp&& val) {
+    this->val = std::move(val);
+  }
 	ListNode(ListNode& n) : val(n.val) {
 		isExistNode = n.isExistNode;
 		//deletable = n.deletable;
