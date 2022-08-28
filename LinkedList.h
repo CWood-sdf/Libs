@@ -6,14 +6,14 @@
 #ifndef NULL
 #define NULL 0
 #endif // !NULL
-
-
+#include <type_traits>
+#include <new>
 
 
 template<class _Tp1, class _Tp2>
 inline typename std::enable_if<
-	not std::is_same<_Tp1, _Tp2>::value
-	and not std::is_same<_Tp1, _Tp2*>::value, _Tp1>::type
+	!std::is_same<_Tp1, _Tp2>::value
+	&& !std::is_same<_Tp1, _Tp2*>::value, _Tp1>::type
 getAsPtr(_Tp2&) {
 	return _Tp1();
 }
@@ -585,7 +585,7 @@ public:
 	}
 	void popCurrent() {
 		if (current == NULL) return;
-		if (current->next == NULL and current->prev == NULL) {
+		if (current->next == NULL && current->prev == NULL) {
 			current->dissolve();
 			delete current;
 			dissolve();
@@ -610,7 +610,7 @@ public:
 	}
 	void popCurrentNext() {
 		if (current == NULL) return;
-		if (current->next == NULL and current->prev == NULL) {
+		if (current->next == NULL && current->prev == NULL) {
 			current->dissolve();
 			delete current;
 			dissolve();
