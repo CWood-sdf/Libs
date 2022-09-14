@@ -57,7 +57,7 @@ public:
 		m[n]->spin(dir, velocity, pct);
 		return *this;
 	}
-	NewMotor<motor_type>& spinVolt(const directionType& dir, int velocity) {
+	NewMotor<motor_type>& spinVolt(const directionType& dir, double velocity) {
 		for (auto n : m) {
 			n->spin(dir, velocity * 0.12, volt);
 		}
