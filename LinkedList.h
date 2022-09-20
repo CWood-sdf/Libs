@@ -794,7 +794,7 @@ private:
 public:
 
 	bool operator==(List& l) {
-		if (empty() && l.empty() || &l == (List*)this) {
+		if ((empty() && l.empty()) || &l == (List*)this) {
 			return true;
 		}
 		return comp(getBase(), l.getBase());

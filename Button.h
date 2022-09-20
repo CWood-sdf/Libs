@@ -110,25 +110,25 @@ struct Button2 {
         y(y),
         width(width),
         height(height),
-        what(what),
-        toWhat(toWhat),
         label(label),
-        fill(fill) {
+        fill(fill),
+        what(what),
+        toWhat(toWhat) {
         fill2 = &fill;
     }
     explicit Button2 (brain& Brain, int x, int y, int width, int height, string& what, string toWhat, const color& fill, const char* label, int xOff, int yOff):
-      Brain(Brain),
-      x(x),
-      y(y),
-      width(width),
-      height(height),
-      label(label),
-      what(what),
-      toWhat(toWhat),
-      fill(fill), 
-      xOff(xOff),
-      yOff(yOff){
-        fill2 = &fill;
+        Brain(Brain),
+        x(x),
+        y(y),
+        width(width),
+        height(height),
+        label(label),
+        fill(fill),
+        xOff(xOff),
+        yOff(yOff),
+        what(what),
+        toWhat(toWhat) {
+            fill2 = &fill;
     }
     explicit Button2(brain& Brain, int x, int y, int width, int height, string& what, string toWhat, const color& fill, const color& fill2, const char* label, int xOff, int yOff) :
         Brain(Brain),
@@ -137,12 +137,12 @@ struct Button2 {
         width(width),
         height(height),
         label(label),
-        what(what),
-        toWhat(toWhat),
         fill(fill),
         fill2(&fill2),
         xOff(xOff),
-        yOff(yOff) {
+        yOff(yOff),
+        what(what),
+        toWhat(toWhat) {
     }
     /*explicit Button2(Button& b, int x, int y) : Button(b){
         this->x = x;

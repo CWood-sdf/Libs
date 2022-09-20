@@ -65,7 +65,8 @@ union PVector {
     PVector(std::initializer_list<double> l) {
         int i = 0;
         if (l.size() > 3) {
-            throw std::range_error("Out of size PVector initializer list (> 3 elements)");
+            cout << "Error: initializer list too large (>3 elements)" << endl;
+            // throw std::range_error("Out of size PVector initializer list (> 3 elements)");
         }
         for (double s : l) {
             arr[i] = s;
@@ -368,7 +369,8 @@ union PVector {
     chain_method operator=(std::initializer_list<double> l) {
         int i = 0;
         if (l.size() > 3) {
-            throw std::range_error("Out of size PVector initializer list (> 3 elements)");
+            cout << "Error: initializer list too large (>3 elements)" << endl;
+            //throw std::range_error("Out of size PVector initializer list (> 3 elements)");
         }
         for (double s : l) {
             arr[i] = s;

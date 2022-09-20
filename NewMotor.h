@@ -5,7 +5,7 @@ using namespace std;
 	for(auto it : v)
 #define vpfor(it, v)   \
 	for(auto* it : v)
-#define vrfor(it, v)   \ 
+#define vrfor(it, v)   \
 for (auto& it : v)
 #define vrep(it, v) \
 	for(int it = 0; it < v.size(); it++)

@@ -31,7 +31,8 @@ public:
             }
         }
         else {
-            throw length_error("Invalid initializer list size");
+            // throw length_error("Invalid initializer list size");
+            cout << "Invalid initializer list size" << endl;
         }
 
     }
@@ -58,7 +59,8 @@ public:
             }
         }
         else {
-            throw length_error("Invalid initializer list size");
+            // throw length_error("Invalid initializer list size");
+            cout << "Invalid initializer list size" << endl;
         }
 
         CHAIN;
@@ -381,7 +383,8 @@ public:
             }
         }
         else {
-            throw length_error("Invalid initializer list size");
+            // throw length_error("Invalid initializer list size");
+            cout << "Invalid initializer list size" << endl;
         }
 
         CHAIN;
