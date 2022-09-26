@@ -556,6 +556,8 @@ public:
 		}
 	}
 	void popBase() {
+		cout << "P" << base << endl;
+		cout << "Pn" << base->next << endl;
 		if (base == NULL) return;
 		if (base->next == NULL) {
 			Node* del = base;
