@@ -3,6 +3,7 @@
 #define BRAIN_HEIGHT 220
 #include <functional>
 struct Button {
+protected:
     brain& Brain;
     int x;
     int y;
@@ -10,10 +11,12 @@ struct Button {
     int height;
     void (*function)(void);
     string label;
-    const color& fill;
-    const color* fill2;
+    color fill;
+    color fill2 = color(50, 50, 50);
     int xOff = 0;
     int yOff = 0;
+    bool pressedLast = false;
+public:
     
     explicit Button (brain& Brain, int x, int y, int width, int height, const color& fill, string label):
       Brain(Brain),
@@ -23,7 +26,7 @@ struct Button {
       height(height),
       label(label),
       fill(fill){
-        fill2 = &fill;
+        fill2 = fill;
     }
     explicit Button (brain& Brain, int x, int y, int width, int height, const color& fill, string label, int xOff, int yOff):
       Brain(Brain),
@@ -35,9 +38,9 @@ struct Button {
       fill(fill), 
       xOff(xOff),
       yOff(yOff){
-        fill2 = &fill;
+        fill2 = fill;
     }
-    explicit Button(brain& Brain, int x, int y, int width, int height, const color& fill, const color& fill2, string label, int xOff, int yOff) :
+    explicit Button(brain& Brain, int x, int y, int width, int height, const color& fill, color fill2, string label, int xOff = 0, int yOff = 0) :
         Brain(Brain),
         x(x),
         y(y),
@@ -47,14 +50,14 @@ struct Button {
         fill(fill),
         xOff(xOff),
         yOff(yOff) {
-        this->fill2 = &fill2;
+        this->fill2 = fill2;
     }
     explicit Button(Button& b, int x, int y) : Button(b){
         this->x = x;
         this->y = y;
         
     }
-    void draw (const char* label = ""){
+    void draw (){
       //fill(this.fill);
       Brain.Screen.setFillColor(this->fill);
       Brain.Screen.drawRectangle(x, y, width, height);
@@ -62,7 +65,7 @@ struct Button {
       Brain.Screen.setCursor(2, 1);
       Brain.Screen.printAt(x + 50 + xOff, y + 50 + yOff, this->label.data());
     }
-    void drawClick(const char* label = "") {
+    void drawClick() {
         //fill(this.fill);
         Brain.Screen.setFillColor(this->fill2);
         Brain.Screen.drawRectangle(x, y, width, height);
@@ -70,14 +73,21 @@ struct Button {
         Brain.Screen.setCursor(2, 1);
         Brain.Screen.printAt(x + 50 + xOff, y + 50 + yOff, this->label.data());
     }
-    bool clicked (){
-      int mouseX = Brain.Screen.xPosition();
-      int mouseY = Brain.Screen.yPosition();
+    bool pressing(){
+        int mouseX = Brain.Screen.xPosition();
+        int mouseY = Brain.Screen.yPosition();
+        if (Brain.Screen.pressing() && mouseX > x &&
+            mouseX < x + width &&
+            mouseY > y &&
+            mouseY < y + height) {
 
-      if (Brain.Screen.pressing() && mouseX > x &&
-          mouseX < x + width &&
-          mouseY > y &&
-          mouseY < y + height) {
+
+          return true;
+      }
+      return false;
+    }
+    bool clicked (){
+      if (pressing()) {
 
           while (Brain.Screen.pressing()) {
               drawClick();
@@ -88,6 +98,26 @@ struct Button {
           return true;
       }
       return false;
+    }
+    bool released(){
+        //Return true when pressing() is false but lastPressed is true
+        bool p = pressing();
+        if(!p && !Brain.Screen.pressing() && pressedLast){
+            pressedLast = false;
+            return true;
+        }
+        pressedLast = p;
+        return false;
+    }
+    bool pressed(){
+        //Return true when pressing() is true but lastPressed is false
+        bool p = pressing();
+        if(p && !pressedLast){
+            pressedLast = true;
+            return true;
+        }
+        pressedLast = p;
+        return false;
     }
 };
 struct Button2 {
@@ -185,6 +215,9 @@ struct Button2 {
     }
 };
 struct MovingButton : public Button {
+    private:
+    bool clickedLast = false;
+    public:
     explicit MovingButton(brain& Brain, int x, int y, int width, int height, const color& fill, string label) :
         Button(Brain, x, y, width, height, fill, label) {
 
@@ -192,31 +225,27 @@ struct MovingButton : public Button {
     explicit MovingButton(brain& Brain, int x, int y, int width, int height, const color& fill, string label, int xOff, int yOff) :
         Button(Brain, x, y, width, height, fill, label, xOff, yOff) {
     }
+    explicit MovingButton(brain& Brain, int x, int y, int width, int height, const color& fill, color fill2, string label, int xOff, int yOff) :
+        Button(Brain, x, y, width, height, fill, fill2, label, xOff, yOff) {
+    }
     explicit MovingButton(Button& b, int x, int y) : Button(b, x, y) {
 
     }
     void draw(const char* label = "") {
         //fill(this.fill);
-        Brain.Screen.setFillColor(this->fill);
+        bool p = pressing();
+        Brain.Screen.setFillColor(p ? this->fill2 : this->fill);
         Brain.Screen.drawRectangle(x, y, width, height);
 
         Brain.Screen.setCursor(2, 1);
         Brain.Screen.printAt(x + 50 + xOff, y + 50 + yOff, this->label.data());
-        if (clicked()) {
+        if (p || (clickedLast && Brain.Screen.pressing())) {
             x = Brain.Screen.xPosition();
             y = Brain.Screen.yPosition();
         }
+        clickedLast = p;
     }
 
-    bool clicked() {
-        int mouseX = Brain.Screen.xPosition();
-        int mouseY = Brain.Screen.yPosition();
-        return  Brain.Screen.pressing() &&
-            mouseX > x &&
-            mouseX < x + width &&
-            mouseY > y &&
-            mouseY < y + height;
-    }
 };
 struct Scroll : public Button {
     int mouseX = 0;
