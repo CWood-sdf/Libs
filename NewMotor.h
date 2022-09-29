@@ -63,6 +63,17 @@ public:
 		}
 		return *this;
 	}
+	//spinVolt the motors, but only the ones that are false in the exceptions list
+	NewMotor<motor_type>& spinVolt(const directionType& dir, double velocity, vector<bool> exceptions) {
+		int i = 0;
+		for (auto n : m) {
+			if (i >= exceptions.size() || !exceptions[i]) {
+				n->spin(dir, velocity * 0.12, volt);
+			}
+			i++;
+		}
+		return *this;
+	}
 	NewMotor<motor_type>& spinVolt(directionType dir, int velocity, int n) {
 		m[n]->spin(dir, velocity * 12.0 / 100.0, volt);
 		return *this;
@@ -99,6 +110,16 @@ public:
 	void stop(brakeType brak) {
 		for (auto n : m) {
 			n->stop(brak);
+		}
+	}
+	//Stop all the motors, but only the ones that are false in the exceptions list
+	void stop(brakeType brak, vector<bool> exceptions) {
+		int i = 0;
+		for (auto n : m) {
+			if (i >= exceptions.size() || !exceptions[i]) {
+				n->stop(brak);
+			}
+			i++;
 		}
 	}
 	void set(brakeType b) {
