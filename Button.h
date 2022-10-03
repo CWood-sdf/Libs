@@ -2,6 +2,11 @@
 #define BRAIN_WIDTH 480
 #define BRAIN_HEIGHT 220
 #include <functional>
+#include <string>
+namespace vex {
+    class brain;
+    class color;
+}
 struct Button {
 protected:
     brain& Brain;
