@@ -1,7 +1,5 @@
 #pragma once
-#ifndef BASE_FILE
-#include "Files.h"
-#endif
+
 #include <vector>
 #ifndef NULL
 #define NULL 0
