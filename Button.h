@@ -16,7 +16,7 @@ protected:
     int height;
     void (*function)(void);
     string label;
-    color fill;
+    const color& fill;
     color fill2 = color(50, 50, 50);
     int xOff = 0;
     int yOff = 0;
@@ -64,7 +64,7 @@ public:
     }
     void draw (){
       //fill(this.fill);
-      Brain.Screen.setFillColor(this->fill);
+      Brain.Screen.setFillColor(pressing() ? this->fill2 : this->fill);
       Brain.Screen.drawRectangle(x, y, width, height);
       
       Brain.Screen.setCursor(2, 1);
