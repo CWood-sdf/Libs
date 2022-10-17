@@ -10,7 +10,7 @@
 #endif
 #include <stdexcept>
 //Macro that prints out a vector in conjunction with cout
-#define VECT_OUT(v) v.x << ", " << v.y << ", " << v.z
+#define VECT_OUT(v) "{" << v.x << ", " << v.y << ", " << v.z << "}"
 #define VECT_XY(v) v.x << ", " << v.y
 union PVector {
     //Define the return type of a chain method
