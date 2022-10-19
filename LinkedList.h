@@ -57,22 +57,14 @@ protected:
 	bool bound = false;
 
 public:
+	/**
+	 * @brief calls std::move on the value if true, otherwise just adds it
+	 * 
+	 * @tparam tempVal 
+	 * @param val the value to be added
+	 */
   template<bool tempVal>
-  void basicPush(_Tp& val);/* {
-		Node* newEnd = isTempVal ? new Node(std::move(val)) : new Node(val);
-		if (endn == NULL) {
-			base = endn = current = newEnd;
-		}
-		else {
-			endn->next = newEnd;
-			newEnd->prev = endn;
-			endn = newEnd;
-
-		}
-		if (current == NULL) {
-			current = endn;
-		}
-	}*/
+  void basicPush(_Tp& val);
   template<>
   void basicPush<true>(_Tp& val) {
     Node* newEnd = new Node(std::move(val));
@@ -105,9 +97,19 @@ public:
       current = endn;
     }
   }
+  /**
+   * @brief calls basicPush<false>(val)
+   * 
+   * @param val the value to be added
+   */
   void push(_Tp& val) {
     basicPush<false>(val);
   }
+  /**
+   * @brief calls basicPush<true>(val)
+   * 
+   * @param val the value to be added
+   */
   void movePush(_Tp& val) {
     basicPush<true>(val);
   }
@@ -160,11 +162,11 @@ protected:
 		current = base;
 	}
 	void constructor(_Tp e1, _Tp e2) {
-		push_back(e1);
-		push_back(e2);
+		pushBack(e1);
+		pushBack(e2);
 	}
 	void constructor(_Tp e) {
-		push_back(e);
+		pushBack(e);
 	}
 	void cconstructor(List& list) {
 		constructor(list);
@@ -204,24 +206,12 @@ protected:
 		}
 		current = base;
 	}
-	/*void constructor(List&& list) {
-		if (list.empty()) return;
-		base = new Node(list.base, endn);
-		current = base;
-	}
-	void constructor(const List&& list) {
-		if (list.empty()) return;
-		base = new Node(list.base, endn);
-		current = base;
-	}*/
 	void constructor(std::initializer_list<_Tp> llist) {
 		for (_Tp g : llist) {
-			push_back(g);
+			pushBack(g);
 		}
 	}
-	/*void constructor(_Tp seed) {
-		base = endn = current = new Node(seed);
-	}*/
+
 	void destructor() {
 		if (empty() || bound);
 		else {
@@ -237,43 +227,79 @@ protected:
 
 	}
 public:
+	/**
+	 * @brief Removes the objects ties to the list pointers without deleting the elements
+	 * 
+	 * @warning This WILL NOT delete the elements in the list, USE WITH CAUTION
+	 * 
+	 */
 	void dissolve() {
 
 		base = endn = current = NULL;
 		bound = false;
 	}
-	static bool notexists(Node& n) {
-		return !n.isExistNode;
-	}
-	static bool exists(Node& n) {
-		return !notexists(n);
-	}
-	bool notexist(Node& n) {
-		return !n.isExistNode;
-	}
-	bool exist(Node& n) {
-		return !notexist(n);
-	}
+	/**
+	 * @brief Strange constructor, all the arguments are parameters for the construction of one element's value
+	 * 
+	 * @tparam Arg1 
+	 * @tparam Arg2 
+	 * @tparam Args 
+	 * @param a1 
+	 * @param a2 
+	 * @param args 
+	 */
 	template<typename Arg1, typename Arg2, typename ... Args>
 	BasicLinkedList(Arg1 a1, Arg2 a2, Args... args) : BasicLinkedList(_Tp(a1, a2, args...)) {
 
 	}
+	/**
+	 * @brief Construct a new empty Linked List object
+	 * 
+	 */
 	BasicLinkedList() {
 
 	}
+	/**
+	 * @brief Construct a new Basic Linked List object
+	 * 
+	 * @param seed The value of the base of the list
+	 */
 	BasicLinkedList(_Tp seed) {
 		constructor(seed);
 	}
+	/**
+	 * @brief Construct a new Basic Linked List object
+	 * 
+	 * @param llist The list to copy the elements off of
+	 */
 	BasicLinkedList(std::initializer_list<_Tp> llist) {
 		constructor(llist);
 	}
+	/**
+	 * @brief Construct a new Basic Linked List object
+	 * 
+	 * @tparam Args A parameter pack of elements
+	 * @param e1 The first element
+	 * @param e2 the second element
+	 * @param args the rest of the elements
+	 */
 	template<typename ... Args>
 	BasicLinkedList(_Tp e1, _Tp e2, Args ... args) : BasicLinkedList(static_cast<_Tp>(args)...) {
 		constructor(e1, e2);
 	}
+	/**
+	 * @brief Construct a new Basic Linked List object
+	 * 
+	 * @param list list to copy
+	 */
 	BasicLinkedList(BasicLinkedList& list) {
 		constructor(list);
 	}
+	/**
+	 * @brief Construct a new Basic Linked List object
+	 * 
+	 * @param llist list to copy
+	 */
 	BasicLinkedList(const BasicLinkedList& llist) {
 		constructor(llist);
 	}
@@ -283,10 +309,19 @@ public:
 	BasicLinkedList(const volatile BasicLinkedList& llist) {
 		constructor(llist);
 	}
+	/**
+	 * @brief Construct a new Basic Linked List object
+	 * 
+	 * @param llist list to move
+	 */
 	BasicLinkedList(BasicLinkedList&& llist) noexcept {
 		constructor(llist);
 		llist.destructor();
 	}
+	/**
+	 * @brief Destroy the Basic Linked List object, cleans up the memory if the elements are not owned by another list
+	 * 
+	 */
 	~BasicLinkedList() {
 		if (!bound) {
 			destructor();
@@ -296,21 +331,32 @@ public:
 			g++;
 		}
 	}
-
-
-
-
+	/**
+	 * @brief Get the Current list element
+	 * 
+	 * @return Node& 
+	 */
 	Node& getCurrent() {
 		if (current == NULL) {
 			return emptyNode;
 		}
 		return *current;
 	}
+	/**
+	 * @brief Get the Base object
+	 * 
+	 * @return Node& 
+	 */
 	Node& getBase() {
 		if (base == NULL)
 			return emptyNode;
 		return *base;
 	}
+	/**
+	 * @brief Get the End object
+	 * 
+	 * @return Node& 
+	 */
 	Node& getEnd() {
 		if (endn == NULL) return emptyNode;
 		return *endn;
@@ -321,6 +367,12 @@ public:
 		ret.bound = true;
 		return ret;
 	}*/
+	/**
+	 * @brief Adds the new list after the current element
+	 * 
+	 * @param llist the list to add
+	 * @param moveToEnd moves the current element to the end of the list added
+	 */
 	void addAfter(List& llist, bool moveToEnd = false) {
 		List newList = List(llist);
 		if (current == NULL) {
@@ -352,6 +404,12 @@ public:
 		newList.dissolve();
 
 	}
+	/**
+	 * @brief Adds an element after the current element
+	 * 
+	 * @param llist the element to add
+	 * @param moveToEnd moves the current element to the end of the list added
+	 */
 	void addAfter(_Tp llist, bool moveToEnd = false) {
 		Node* newList = new Node(llist);
 		if (current == NULL) {
@@ -381,6 +439,12 @@ public:
 		}
 
 	}
+	/**
+	 * @brief Adds the new list before the current element
+	 * 
+	 * @param llist the list to add
+	 * @param moveToBeg moves the current element to the beginning of the list added
+	 */
 	void addBefore(List& llist, bool moveToBeg = false) {
 		List newList = List(llist);
 		if (current == NULL) {
@@ -412,6 +476,12 @@ public:
 		newList.dissolve();
 
 	}
+	/**
+	 * @brief Adds an element before the current element
+	 * 
+	 * @param llist the element to add
+	 * @param moveToBeg moves the current element to the beginning of the list added
+	 */
 	void addBefore(_Tp llist, bool moveToBeg = false) {
 		Node* newList = new Node(llist);
 		if (current == NULL) {
@@ -441,45 +511,58 @@ public:
 		}
 
 	}
-	/*void add(unsigned int amnt) {
-		while (amnt-- > 0) {
-			add();
-		}
-	}
-	void add() {
-		Node* newEnd = new Node();
-		if (endn == NULL) {
-			base = endn = current = newEnd;
-		}
-		else {
-			endn->next = newEnd;
-			newEnd->prev = endn;
-			endn = newEnd;
 
-		}
-		if (current == NULL) {
-			current = endn;
-		}
-	}*/
-
+	/**
+	 * @brief constructs a new element from the arguments and adds it to the end
+	 * 
+	 * @tparam Arg1 
+	 * @tparam Arg2 
+	 * @tparam Args 
+	 * @param a1 
+	 * @param a2 
+	 * @param args 
+	 */
 	template<typename Arg1, typename Arg2, typename ... Args>
-	void push_back(Arg1 a1, Arg2 a2, Args... args) {
-		push_back(_Tp(a1, a2, args...));
+	void pushBack(Arg1 a1, Arg2 a2, Args... args) {
+		pushBack(_Tp(a1, a2, args...));
 	}
-	void push_back(_Tp& val) {
+	/**
+	 * @brief adds the element to the list
+	 * 
+	 * @param val 
+	 */
+	void pushBack(_Tp& val) {
 		push(val);
 	}
+	/**
+	 * @brief constructs a new element from the arguments and adds it to the beginning, only enabled if the list is not a pointer-ref
+	 * 
+	 * @tparam r 
+	 * @param val 
+	 * @return std::enable_if<
+	 * !std::is_same<_Tp, r*&>::value, void>::type 
+	 */
 	template<class r = RawTp>
 	inline typename std::enable_if<
 		!std::is_same<_Tp, r*&>::value, void>::type
-	 push_back(_Tp&& val) {
+	 pushBack(_Tp&& val) {
     movePush(val);
 
 	}
-	void push_back(Node& n) {
-		push_back(n.val);
+	/**
+	 * @brief Adds the element to the end of the list
+	 * 
+	 * @param n the node to add
+	 */
+	void pushBack(Node& n) {
+		pushBack(n.val);
 	}
-	void push_back(List& list) {
+	/**
+	 * @brief Concats the list onto the end of this list
+	 * 
+	 * @param list the list to add
+	 */
+	void pushBack(List& list) {
 		if (list.empty())
 			return;
 		List addList = List(list);
@@ -493,11 +576,26 @@ public:
 		}
 		addList.dissolve();
 	}
+	/**
+	 * @brief constructs a new element from the arguments and adds it to the beginning
+	 * 
+	 * @tparam Arg1 
+	 * @tparam Arg2 
+	 * @tparam Args 
+	 * @param a1 
+	 * @param a2 
+	 * @param args 
+	 */
 	template<typename Arg1, typename Arg2, typename ... Args>
-	void push_base(Arg1 a1, Arg2 a2, Args... args) {
-		push_base(_Tp(a1, a2, args...));
+	void pushBase(Arg1 a1, Arg2 a2, Args... args) {
+		pushBase(_Tp(a1, a2, args...));
 	}
-	void push_base(_Tp& val) {
+	/**
+	 * @brief adds the element to the base of the list
+	 * 
+	 * @param val the value to add
+	 */
+	void pushBase(_Tp& val) {
 		Node* newBase = new Node(val);
 		if (endn == NULL) {
 			base = endn = current = newBase;
@@ -512,17 +610,35 @@ public:
 			current = base;
 		}
 	}
+	/**
+	 * @brief constructs a new element from the arguments and adds it to the beginning, only enabled if the list is not a pointer-ref
+	 * 
+	 * @tparam r 
+	 * @param val 
+	 * @return std::enable_if<
+	 * !std::is_same<_Tp, r*&>::value, void>::type 
+	 */
 	template<class r = RawTp>
 	inline typename std::enable_if<
 		!std::is_same<_Tp, r*&>::value, void>::type
-	 push_base(_Tp&& val) {
-		push_base(val);
+	 pushBase(_Tp&& val) {
+		pushBase(val);
 
 	}
-	void push_base(Node& n) {
-		push_base(n.val);
+	/**
+	 * @brief Adds the element to the beginning of the list
+	 * 
+	 * @param n the node to add
+	 */
+	void pushBase(Node& n) {
+		pushBase(n.val);
 	}
-	void push_base(List& list) {
+	/**
+	 * @brief Concats the list onto the beginning of this list
+	 * 
+	 * @param list the list to add
+	 */
+	void pushBase(List& list) {
 		if (list.empty())
 			return;
 		List addList = List(list);
@@ -536,6 +652,10 @@ public:
 		}
 		addList.dissolve();
 	}
+	/**
+	 * @brief removes the end node
+	 * 
+	 */
 	void popEnd() {
 		if (endn == NULL) return;
 		if (endn->prev == NULL) {
@@ -553,6 +673,10 @@ public:
 			endn->next = NULL;
 		}
 	}
+	/**
+	 * @brief removes the base node
+	 * 
+	 */
 	void popBase() {
 		// cout << "P" << base << endl;
 		// cout << "Pn" << base->next << endl;
@@ -574,8 +698,11 @@ public:
 			base->prev = NULL;
 		}
 	}
-#ifndef BASE_FILE
-#endif
+	/**
+	 * @brief Reference (kinda) binds the list to the given list
+	 * 
+	 * @param llist 
+	 */
 	void joinTo(List& llist) {
 		destructor();
 		bound = true;
@@ -583,6 +710,10 @@ public:
 		base = llist.base;
 		current = llist.current;
 	}
+	/**
+	 * @brief Removes the current node, shifts the current node to the previous node
+	 * 
+	 */
 	void popCurrent() {
 		if (current == NULL) return;
 		if (current->next == NULL && current->prev == NULL) {
@@ -608,6 +739,10 @@ public:
 			current = prev;
 		}
 	}
+	/**
+	 * @brief Removes the current node, shifts the current node to the next node
+	 * 
+	 */
 	void popCurrentNext() {
 		if (current == NULL) return;
 		if (current->next == NULL && current->prev == NULL) {
@@ -627,27 +762,46 @@ public:
 			current = next;
 		}
 	}
-	/*bool empty() {
-		return endn == NULL || base == NULL;
-	}*/
+	/**
+	 * @brief Returns true if the list is empty
+	 * 
+	 * @return true 
+	 * @return false 
+	 */
 	bool empty() const {
 		return base == NULL;
 	}
-	/*bool empty() const& {
-		return base == NULL;
-	}*/
+	/**
+	 * @brief Empty the list
+	 * 
+	 */
 	void clear() {
 		destructor();
 		dissolve();
 	}
+	/**
+	 * @brief Set the Current object to the given node
+	 * 
+	 * @warning DOES NOT CHECK IF THE NODE IS IN THE LIST
+	 * 
+	 * @param n a node
+	 */
 	void setCurrent(Node& n) {
 		current = &n;
 	}
+	/**
+	 * @brief Moves the current node closer to the base
+	 * 
+	 */
 	void moveCurrentLeft() {
 		if (!empty() && current != base) {
 			current = current->prev;
 		}
 	}
+	/**
+	 * @brief Moves the current node closer to the end
+	 * 
+	 */
 	void moveCurrentRight() {
 		if (!empty() && current != endn) {
 			current = current->next;
@@ -707,10 +861,22 @@ private:
 	}
 	int iters = 0;
 public:
+	/**
+	 * @brief Returns the size of the list
+	 * 
+	 * @return int 
+	 */
 	int size() {
 		if (empty()) return 0;
 		return size(base) + 1;
 	}
+	/**
+	 * @brief Returns true if the list is of the given size
+	 * 
+	 * @param wantSize the size to check
+	 * @return true 
+	 * @return false 
+	 */
 	bool size(int wantSize) {
 		int cSize = 0;
 		if (empty()) {
@@ -721,26 +887,18 @@ public:
 		}
 		return size(base, cSize, wantSize);
 	}
-	bool iter() {
-
-		if (current == NULL) current = base;
-		if (empty()) return false;
-		if (iters++ == 0) {
-			current = base;
-			return true;
-		}
-		else {
-			current = current->next;
-			if (current == NULL) { // reached end
-				iters = 0;
-				return false;
-			}
-			return true;
-		}
-	}
+	/**
+	 * @brief Unbinds the list
+	 * 
+	 */
 	void unbind() {
 		bound = false;
 	}
+	/**
+	 * @brief Calls moveCurrentRight
+	 * 
+	 * @return Node& 
+	 */
 	Node& operator++() const volatile {
 		if (current == endn) {
 			return emptyNode;
@@ -758,6 +916,11 @@ public:
 			return *current;
 		}
 	}
+	/**
+	 * @brief Calls moveCurrentLeft
+	 * 
+	 * @return Node& 
+	 */
 	Node& operator--() {
 		if (current == base) {
 			return emptyNode;
@@ -792,29 +955,53 @@ private:
 		return false;
 	}
 public:
-
+	/**
+	 * @brief Compares two lists
+	 * 
+	 * @param l 
+	 * @return true 
+	 * @return false 
+	 */
 	bool operator==(List& l) {
 		if ((empty() && l.empty()) || &l == (List*)this) {
 			return true;
 		}
 		return comp(getBase(), l.getBase());
 	}
+	/**
+	 * @brief Compares two lists
+	 * 
+	 * @param l 
+	 * @return true 
+	 * @return false 
+	 */
   bool operator==(List&& l) {
     return operator==(l);
   }
+  /**
+   * @brief Compares two lists
+   * 
+   * @param l 
+   * @return true 
+   * @return false 
+   */
   bool operator!=(List& l) {
     return !operator==(l);
   }
+  /**
+   * @brief Compares two lists
+   * 
+   * @param l 
+   * @return true 
+   * @return false 
+   */
   bool operator!=(List&& l) {
     return !operator==(l);
   }
-	/*operator BasicLinkedList<_Tp&>() {
-		BasicLinkedList<_Tp&> ret;
-		for (auto& i : *this) {
-			ret.push_back(i);
-		}
-		return ret;
-	}*/
+  /**
+   * @brief Moves the current node to the base
+   * 
+   */
 	void reset() const volatile {
 		//current = base;
 
@@ -825,6 +1012,10 @@ public:
 		nl->current = nl->base;
 
 	}
+	/**
+	 * @brief Moves the current node to the end
+	 * 
+	 */
 	void resetEnd() const volatile {
 		//A little pointer workaround that allows me to change current
 		char* l = (char*)this;
@@ -890,22 +1081,43 @@ public:
 	void dissolve() {
 		next = prev = NULL;
 	}
-
+	/**
+	 * @brief Returns the next node
+	 * 
+	 * @return Node& 
+	 */
 	Node& getNext() const volatile {
 		if (next == NULL) {
 			return emptyNode;
 		}
 		return *next;
 	}
+	/**
+	 * @brief Returns the previous node
+	 * 
+	 * @return Node& 
+	 */
 	Node& getPrev() const volatile {
 		if (prev == NULL) {
 			return emptyNode;
 		}
 		return *prev;
 	}
+	/**
+	 * @brief Returns true if the node exists
+	 * 
+	 * @return true 
+	 * @return false 
+	 */
 	bool exists() const volatile {
 		return isExistNode;
 	}
+	/**
+	 * @brief Returns true if the node does not exist
+	 * 
+	 * @return true 
+	 * @return false 
+	 */
 	bool notexists() const volatile {
 		return !exists();
 	}
