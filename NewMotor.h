@@ -21,10 +21,12 @@ namespace vex {
 	enum class percentUnits;
 }
 using namespace vex;
-template <class motor_type = vex::motor>
 class NewMotor {
 	int size = 0;
-	typedef NewMotor<motor_type>& chain_method;
+	map<motor*, vector<NewMotor*>> ptoMotors;
+	typedef motor motor_type;
+	typedef NewMotor& chain_method;
+	vector<double> lastVoltCmd = {};
 	vector<motor_type*> m = vector<motor_type*>();
 	vector<tuple<bool, vector<pneumatics*>, vector<int>>> pto = {};
 	//might as well overallocate, this is just temporary anyway
@@ -33,6 +35,7 @@ class NewMotor {
 	void addMotor(args*... a) {
 		m = { a... };
 		size = m.size();
+		lastVoltCmd = vector<double>(size, 0.0);
 	}
 	void setPtoAllowed(){
 		//Fill allowedMotors with true
@@ -43,6 +46,14 @@ class NewMotor {
 				for(int i : get<2>(t)){
 					allowedMotors[i] = false;
 				}
+			}
+		}
+	}
+	void reinvokeLast(){
+		setPtoAllowed();
+		for(int i = 0; i < size; i++){
+			if(allowedMotors[i]){
+				m[i]->spin(directionType::fwd, lastVoltCmd[i], percentUnits::pct);
 			}
 		}
 	}
@@ -57,13 +68,42 @@ public:
 	}
 	NewMotor() {
 		m = vector<motor_type*>();
+		lastVoltCmd = vector<double>();
 	}
-	NewMotor(const NewMotor<>&) = default;
+	NewMotor(const NewMotor&) = default;
 	int addPto(pneumatics& p, vector<int> motors, bool desiredState = true) {
+		for(int i : motors){
+			if(i >= m.size()){
+				cerr << "NewMotor::addPto: Motor index out of range" << endl;
+				return -1;
+			}
+		}
+		//Loop through motors and add all motors to ptoMotors
+		for(int i : motors){
+			//Check if ptoMotors does not contain the motor
+			if(ptoMotors.count(m[i]) == 0){
+				//Add the motor to ptoMotors
+				ptoMotors[m[i]] = vector<NewMotor*>();
+			}
+			ptoMotors[m[i]].push_back(this);
+		}
 		pto.push_back(make_tuple(desiredState, vector<pneumatics*>{&p}, motors));
 		return pto.size() - 1;
 	}
 	int addPto(vector<pneumatics*> p, vector<int> motors, bool desiredState = true) {
+		for(int i : motors){
+			if(i >= m.size()){
+				cerr << "NewMotor::addPto: Motor index out of range" << endl;
+				return -1;
+			}
+		}
+		//Loop through motors and add all pointers to the map
+		for(int i : motors){
+			if(ptoMotors.count(m[i]) == 0){
+				ptoMotors[m[i]] = vector<NewMotor*>();
+			}
+			ptoMotors[m[i]].push_back(this);
+		}
 		pto.push_back(make_tuple(desiredState, p, motors));
 		return pto.size() - 1;
 	}
@@ -78,6 +118,20 @@ public:
 		//Loop through desired pto and set the pneumatics to the opposite of the desired state
 		for(auto& p : get<1>(pto[ptoIndex])){
 			p->set(!get<0>(pto[ptoIndex]));
+		}
+		//Get the motors that are not allowed to be driven
+		vector<int> notAllowed = get<2>(pto[ptoIndex]);	
+		//Loop through notAllowed and set the map pointers to reinvoke
+		for(int i : notAllowed){
+			//Loop through the pointers in the map
+			for(auto* n : ptoMotors[m[i]]){
+				//If the pointer is not this, reinvoke
+				if(n != this){
+					n->reinvokeLast();
+					//Don't want a multiple reinvoke
+					break;
+				}
+			}
 		}
 		CHAIN;
 	}
@@ -94,12 +148,14 @@ public:
 			}
 			i++;
 		}
+		lastVoltCmd = vector<double>(size, 0.0);
 	}
 	
 	void stop() {
 		for (auto n : m) {
 			n->stop();
 		}
+		lastVoltCmd = vector<double>(size, 0.0);
 	}
 	//spin fwd
 	chain_method spin(directionType dir, int velocity, percentUnits v = pct) {
@@ -110,6 +166,7 @@ public:
 				n->spin(dir, velocity, v);
 			}
 		}
+		lastVoltCmd = vector<double>(size, velocity * (v == pct ? 1.0 : 120.0 / 100.0) * (dir == fwd ? 1.0 : -1.0));
 		return *this;
 	}
 	//spin a specific motor
@@ -118,6 +175,7 @@ public:
 		if(allowedMotors[n]){
 			m[n]->spin(dir, velocity, pct);
 		}
+		lastVoltCmd[n] = velocity * (pct == pct ? 1.0 : 120.0 / 100.0) * (dir == fwd ? 1.0 : -1.0);
 		return *this;
 	}
 	//spinVolt the motors, but only the ones that are false in the exceptions list
@@ -130,6 +188,7 @@ public:
 			}
 			i++;
 		}
+		lastVoltCmd = vector<double>(size, velocity * 0.12 * (dir == fwd ? 1.0 : -1.0));
 		return *this;
 	}
 	//spinVolt a specific motor	
@@ -138,6 +197,7 @@ public:
 		if (allowedMotors[n]) {
 			m[n]->spin(dir, velocity * 12.0 / 100.0, volt);
 		}
+		lastVoltCmd[n] = velocity * 0.12 * (dir == fwd ? 1.0 : -1.0);
 		return *this;
 	}	
 	//spin a specific motor
@@ -148,8 +208,10 @@ public:
 			if (allowedMotors[i]) {
 				n->spin(fwd, speeds[i], pct);
 			}
+			lastVoltCmd[i] = (double)speeds[i] * 0.12;
 			i++;
 		}
+
 		return *this;
 	}
 	//wait for a certain amount of time
@@ -164,17 +226,21 @@ public:
 		if (dir == directionType::fwd) {
 			repeat(size / 2) {
 				spin(fwd, velocity, iterator);
+				lastVoltCmd[iterator] = velocity * 0.12;
 			}
 			startRepeat(size / 2, size) {
-				spin(reverse, velocity, i);
+				spin(vex::reverse, velocity, i);
+				lastVoltCmd[i] = velocity * 0.12;
 			}
 		}
 		else {
 			repeat(size / 2) {
-				spin(reverse, velocity, iterator);
+				spin(vex::reverse, velocity, iterator);
+				lastVoltCmd[iterator] = velocity * 0.12;
 			}
 			startRepeat(size / 2, size) {
 				spin(fwd, velocity, i);
+				lastVoltCmd[i] = velocity * 0.12;
 			}
 		}
 	}
@@ -188,6 +254,7 @@ public:
 			}
 			
 		}
+		lastVoltCmd = vector<double>(size, 0.0);
 		return *this;
 	}
 	void set(brakeType b) {
