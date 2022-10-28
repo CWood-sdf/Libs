@@ -251,6 +251,15 @@ union PVector {
         } 
         CHAIN
     }
+    double dot(PVector v) {
+        return x * v.x + y * v.y + z * v.z;
+    }
+    PVector cross(PVector v) {
+        double crossX = y * v.z - v.y * z;
+        double crossY = z * v.x - v.z * x;
+        double crossZ = x * v.y - v.x * y;
+        return PVector(crossX, crossY, crossZ);
+    }
     //Get headings
     double heading2D() { 
 
