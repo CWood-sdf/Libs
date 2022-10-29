@@ -332,6 +332,24 @@ public:
 		}
 	}
 	/**
+	 * @brief Returns the first node that matches the given value
+	 * 
+	 * @param e a value to search for
+	 * @return Node& the node that matches the value
+	 */
+	Node& find(_Tp e) {
+		if (empty()) return emptyNode;
+		auto n = base;
+		while (n != endn) {
+			if (n->value == e) {
+				return *n;
+			}
+			n = n->next;
+		}
+		if(n->value == e) return *n;
+		return emptyNode;
+	}
+	/**
 	 * @brief Get the Current list element
 	 * 
 	 * @return Node& 
@@ -782,12 +800,18 @@ public:
 	/**
 	 * @brief Set the Current object to the given node
 	 * 
-	 * @warning DOES NOT CHECK IF THE NODE IS IN THE LIST
-	 * 
 	 * @param n a node
 	 */
 	void setCurrent(Node& n) {
-		current = &n;
+		//Check if the node is in the list
+		Node* c = base;
+		while (c != NULL) {
+			if (c == &n) {
+				current = &n;
+				return;
+			}
+			c = c->next;
+		}
 	}
 	/**
 	 * @brief Moves the current node closer to the base
