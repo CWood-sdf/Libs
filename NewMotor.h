@@ -243,6 +243,7 @@ public:
 				lastVoltCmd[i] = velocity * 0.12;
 			}
 		}
+		CHAIN;
 	}
 	//stop all motors
 	chain_method stop(brakeType brak) {
