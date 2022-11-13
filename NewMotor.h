@@ -21,6 +21,14 @@ namespace vex {
 	enum class percentUnits;
 }
 using namespace vex;
+class Pto {
+	int index = 0;
+public:
+	Pto(int i) : index(i) {}
+	operator int(){
+		return index;
+	}
+};
 class NewMotor {
 	int size = 0;
 	map<motor*, vector<NewMotor*>> ptoMotors;
@@ -71,6 +79,14 @@ public:
 		lastVoltCmd = vector<double>();
 	}
 	NewMotor(const NewMotor&) = default;
+	/**
+	 * @brief Adds a pto on the given motors
+	 * 
+	 * @param p the pneumatics
+	 * @param motors the motors to run
+	 * @param desiredState runs the motors if the pneumatics are in this state
+	 * @return int the index of the PTO, store it in a Pto object
+	 */
 	int addPto(pneumatics& p, vector<int> motors, bool desiredState = true) {
 		for(int i : motors){
 			if(i >= m.size()){
@@ -90,22 +106,78 @@ public:
 		pto.push_back(make_tuple(desiredState, vector<pneumatics*>{&p}, motors));
 		return pto.size() - 1;
 	}
-	int addPto(vector<pneumatics*> p, vector<int> motors, bool desiredState = true) {
-		for(int i : motors){
-			if(i >= m.size()){
-				cerr << "NewMotor::addPto: Motor index out of range" << endl;
+	// /**
+	//  * @brief Adds a pto on the given motors
+	//  * 
+	//  * @param p the pneumatics
+	//  * @param motors the motors to run
+	//  * @param desiredState runs the motors if the pneumatics are in this state
+	//  * @return int the index of the PTO, store it in a Pto object
+	//  */
+	// int addPto(vector<pneumatics*> p, vector<int> motors, bool desiredState = true) {
+	// 	for(int i : motors){
+	// 		if(i >= m.size()){
+	// 			cerr << "NewMotor::addPto: Motor index out of range" << endl;
+	// 			return -1;
+	// 		}
+	// 	}
+	// 	//Loop through motors and add all pointers to the map
+	// 	for(int i : motors){
+	// 		if(ptoMotors.count(m[i]) == 0){
+	// 			ptoMotors[m[i]] = vector<NewMotor*>();
+	// 		}
+	// 		ptoMotors[m[i]].push_back(this);
+	// 	}
+	// 	pto.push_back(make_tuple(desiredState, p, motors));
+	// 	return pto.size() - 1;
+	// }
+	int indexOf(motor_type* m) {
+		for(int i = 0; i < size; i++){
+			if(m == this->m[i]){
+				return i;
+			}
+		}
+		return -1;
+	}
+	// /**
+	//  * @brief Adds a pto on the given motors
+	//  * 
+	//  * @param p the pneumatics
+	//  * @param motors the motors to run
+	//  * @param desiredState runs the motors if the pneumatics are in this state
+	//  * @return int the index of the PTO, store it in a Pto object
+	//  */
+	// int addPto(vector<pneumatics*> p, vector<motor*> motors, bool desiredState = true){
+	// 	vector<int> motorIndexes = {};
+	// 	for(motor* mot : motors){
+	// 		int index = indexOf(mot);
+	// 		if(index < 0){
+	// 			cerr << "NewMotor::addPto: Motor not found" << endl;
+	// 			return -1;
+	// 		}
+	// 		motorIndexes.push_back(index);
+	// 	}
+	// 	return addPto(p, motorIndexes, desiredState);
+	// }
+	/**
+	 * @brief Adds a pto on the given motors
+	 * 
+	 * @param p the pneumatics
+	 * @param motors the motors to run
+	 * @param desiredState runs the motors if the pneumatics are in this state
+	 * @return int the index of the PTO, store it in a Pto object
+	 */
+	int addPto(pneumatics& p, vector<motor*> motors, bool desiredState = true){
+		vector<int> motorIndexes = {};
+		for(motor* mot : motors){
+			int index = indexOf(mot);
+			if(index < 0){
+				cerr << "NewMotor::addPto: Motor not found" << endl;
 				return -1;
 			}
+			motorIndexes.push_back(index);
 		}
-		//Loop through motors and add all pointers to the map
-		for(int i : motors){
-			if(ptoMotors.count(m[i]) == 0){
-				ptoMotors[m[i]] = vector<NewMotor*>();
-			}
-			ptoMotors[m[i]].push_back(this);
-		}
-		pto.push_back(make_tuple(desiredState, p, motors));
-		return pto.size() - 1;
+		return addPto(p, motorIndexes, desiredState);
 	}
 	chain_method setPtoDrive(int ptoIndex){
 		//Loop through desired pto and set the pneumatics to the desired state
