@@ -31,7 +31,7 @@ public:
 };
 class NewMotor {
 	int size = 0;
-	map<motor*, vector<NewMotor*>> ptoMotors;
+	static inline map<motor*, vector<NewMotor*>> ptoMotors;
 	typedef motor motor_type;
 	typedef NewMotor& chain_method;
 	vector<double> lastVoltCmd = {};
@@ -180,13 +180,22 @@ public:
 		return addPto(p, motorIndexes, desiredState);
 	}
 	chain_method setPtoDrive(int ptoIndex){
+		if(ptoIndex >= pto.size() || ptoIndex < 0){
+			cerr << "NewMotor::setPtoDrive: PTO index out of range" << endl;
+			CHAIN;
+		}
 		//Loop through desired pto and set the pneumatics to the desired state
 		for(auto& p : get<1>(pto[ptoIndex])){
 			p->set(get<0>(pto[ptoIndex]));
 		}
+		reinvokeLast();
 		CHAIN;
 	}
 	chain_method setPtoRelease(int ptoIndex){
+		if(ptoIndex >= pto.size() || ptoIndex < 0){
+			cerr << "NewMotor::setPtoRelease: PTO index out of range" << endl;
+			CHAIN;
+		}
 		//Loop through desired pto and set the pneumatics to the opposite of the desired state
 		for(auto& p : get<1>(pto[ptoIndex])){
 			p->set(!get<0>(pto[ptoIndex]));
