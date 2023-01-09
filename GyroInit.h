@@ -1,21 +1,33 @@
-#pragma once
-#include <typeinfo>
-template<class Tp>
-void gyroInit(Tp& Gyro) {
-    if (Gyro.installed()) {
-        //Calibrate the gyro  
+#ifndef GYROINIT_H
+#define GYROINIT_H
+#include <iostream>
+namespace vex
+{
+    class task;
+}
+template <class Tp>
+void gyroInit(Tp& Gyro)
+{
+    if (Gyro.installed())
+    {
+        // Calibrate the gyro
         Gyro.startCalibration();
-        task::sleep(200);
+        vex::task::sleep(200);
         Gyro.calibrate();
-        cout << "Calibrating Sensor..." << flush;
-        while (Gyro.isCalibrating()) {
-            task::sleep(100);
-            cout << "." << flush;
+        // Give the nice "..."" in the terminal
+        std::cout << "Calibrating Sensor..." << std::flush;
+        while (Gyro.isCalibrating())
+        {
+            vex::task::sleep(100);
+            std::cout << "." << std::flush;
         }
-        cout << endl;
-        task::sleep(500);
+        std::cout << std::endl;
+        vex::task::sleep(500);
     }
-    else {
-        cout << "No Sensor" << endl;
+    else
+    {
+        std::cout << "No Sensor" << std::endl;
     }
 }
+
+#endif // GYROINIT_H

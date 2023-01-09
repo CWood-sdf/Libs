@@ -1,13 +1,11 @@
-#pragma once
-
+#ifndef PVECTOR_H
+#define PVECTOR_H
+#define CHAIN return *this;
 // Import mathematical header files
 #include <cmath>
 #define _USE_MATH_DEFINES
 #include <math.h>
 // Define a macro for chained functions
-#ifndef CHAIN
-#define CHAIN return *this;
-#endif
 #include <stdexcept>
 // Macro that prints out a vector in conjunction with cout
 #define VECT_OUT(v) "{" << v.x << ", " << v.y << ", " << v.z << "}"
@@ -15,7 +13,7 @@
 union PVector
 {
     // Define the return type of a chain method
-    typedef PVector &chain_method;
+    typedef PVector& chain_method;
     // Converts radians to degrees
     double radToDeg(double r)
     {
@@ -43,7 +41,7 @@ union PVector
     };
     double arr[3] = {0.0, 0.0, 0.0};
     // Access the array propertys directly
-    double &operator[](int i)
+    double& operator[](int i)
     {
         return arr[i];
     }
@@ -66,8 +64,8 @@ union PVector
         x = 0.0;
     }
     // Have compiler generate move and copy constructors and destruct
-    PVector(PVector &&v) = default;
-    PVector(const PVector &v)
+    PVector(PVector&& v) = default;
+    PVector(const PVector& v)
     {
         x = v.x;
         y = v.y;
@@ -130,7 +128,7 @@ union PVector
         z += temp.z;
         CHAIN
     }
-    chain_method add(PVector *temp)
+    chain_method add(PVector* temp)
     {
         x += temp->x;
         y += temp->y;
@@ -153,7 +151,7 @@ union PVector
         z -= v.z;
         CHAIN
     }
-    chain_method sub(PVector *v)
+    chain_method sub(PVector* v)
     {
         x -= v->x;
         y -= v->y;
@@ -189,7 +187,7 @@ union PVector
         z *= v.z;
         CHAIN
     }
-    chain_method mult(PVector *v)
+    chain_method mult(PVector* v)
     {
         x *= v->x;
         y *= v->y;
@@ -212,7 +210,7 @@ union PVector
         z /= v.z;
         CHAIN
     }
-    chain_method div(PVector *v)
+    chain_method div(PVector* v)
     {
         x /= v->x;
         y /= v->y;
@@ -228,7 +226,7 @@ union PVector
         return sqrt(dx * dx + dy * dy);
     }
 
-    double dist2D(PVector *v)
+    double dist2D(PVector* v)
     {
         double dx = x - v->x;
         double dy = y - v->y;
@@ -483,3 +481,5 @@ union PVector
             static_cast<VType>(std::round(y))};
     }
 };
+
+#endif // PVECTOR_H
