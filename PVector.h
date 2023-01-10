@@ -4,10 +4,11 @@
 // Import mathematical header files
 #include <cmath>
 #define _USE_MATH_DEFINES
+#include <iostream>
 #include <math.h>
 // Define a macro for chained functions
 #include <stdexcept>
-// Macro that prints out a vector in conjunction with cout
+// Macro that prints out a vector in conjunction with std::cout
 #define VECT_OUT(v) "{" << v.x << ", " << v.y << ", " << v.z << "}"
 #define VECT_XY(v) v.x << ", " << v.y
 union PVector
@@ -76,7 +77,7 @@ union PVector
         int i = 0;
         if (l.size() > 3)
         {
-            cout << "Error: initializer list too large (>3 elements)" << endl;
+            std::cout << "Error: initializer list too large (>3 elements)" << std::endl;
             // throw std::range_error("Out of size PVector initializer list (> 3 elements)");
         }
         for (double s : l)
@@ -443,7 +444,7 @@ union PVector
         int i = 0;
         if (l.size() > 3)
         {
-            cout << "Error: initializer list too large (>3 elements)" << endl;
+            std::cout << "Error: initializer list too large (>3 elements)" << std::endl;
             // throw std::range_error("Out of size PVector initializer list (> 3 elements)");
         }
         for (double s : l)
@@ -477,8 +478,8 @@ union PVector
     operator T()
     {
         return {
-            static_cast<VType>(std::round(x)),
-            static_cast<VType>(std::round(y))};
+            static_cast<VType>(x),
+            static_cast<VType>(y)};
     }
 };
 

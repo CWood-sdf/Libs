@@ -13,10 +13,13 @@
 #ifndef CHAIN
 #define CHAIN return *this
 #endif
+#include <array>
+#include <iostream>
 #include <map>
-
+#include <tuple>
 namespace vex
 {
+    class pneumatics;
     class motor;
     enum class directionType;
     enum class percentUnits;
@@ -41,7 +44,7 @@ class NewMotor
     typedef NewMotor& chain_method;
     std::vector<double> lastVoltCmd = {};
     std::vector<motor_type*> m = std::vector<motor_type*>();
-    std::vector<tuple<bool, std::vector<pneumatics*>, std::vector<int>>> pto = {};
+    std::vector<std::tuple<bool, std::vector<pneumatics*>, std::vector<int>>> pto = {};
     // might as well overallocate, this is just temporary anyway
     std::vector<bool> allowedMotors = std::vector<bool>(10, true);
     template <typename... args>
@@ -58,10 +61,10 @@ class NewMotor
         // Loop through pto and if first pneumatic matches the bool, fill allowedMotors indexes with false in allowedMotors
         for (auto& t : pto)
         {
-            if (get<0>(t) == get<1>(t)[0]->value())
+            if (std::get<0>(t) == std::get<1>(t)[0]->value())
             {
-                cout << "Pto is active " << this << endl;
-                for (int i : get<2>(t))
+                std::cout << "Pto is active " << this << std::endl;
+                for (int i : std::get<2>(t))
                 {
                     allowedMotors[i] = false;
                 }
@@ -70,7 +73,7 @@ class NewMotor
     }
     void reinvokeLast()
     {
-        cout << "Reinvoking pto " << this << endl;
+        std::cout << "Reinvoking pto " << this << std::endl;
         setPtoAllowed();
         for (int i = 0; i < size; i++)
         {
@@ -112,7 +115,7 @@ public:
         {
             if (i >= m.size())
             {
-                cerr << "NewMotor::addPto: Motor index out of range" << endl;
+                std::cerr << "NewMotor::addPto: Motor index out of range" << std::endl;
                 return -1;
             }
         }
@@ -157,7 +160,7 @@ public:
             int index = indexOf(mot);
             if (index < 0)
             {
-                cerr << "NewMotor::addPto: Motor not found" << endl;
+                std::cerr << "NewMotor::addPto: Motor not found" << std::endl;
                 return -1;
             }
             motorIndexes.push_back(index);
@@ -168,13 +171,13 @@ public:
     {
         if (ptoIndex >= pto.size() || ptoIndex < 0)
         {
-            cerr << "NewMotor::setPtoDrive: PTO index out of range" << endl;
+            std::cerr << "NewMotor::setPtoDrive: PTO index out of range" << std::endl;
             CHAIN;
         }
         // Loop through desired pto and set the pneumatics to the desired state
-        for (auto& p : get<1>(pto[ptoIndex]))
+        for (auto& p : std::get<1>(pto[ptoIndex]))
         {
-            p->set(get<0>(pto[ptoIndex]));
+            p->set(std::get<0>(pto[ptoIndex]));
         }
         reinvokeLast();
         CHAIN;
@@ -183,16 +186,16 @@ public:
     {
         if (ptoIndex >= pto.size() || ptoIndex < 0)
         {
-            cerr << "NewMotor::setPtoRelease: PTO index out of range" << endl;
+            std::cerr << "NewMotor::setPtoRelease: PTO index out of range" << std::endl;
             CHAIN;
         }
         // Loop through desired pto and set the pneumatics to the opposite of the desired state
-        for (auto& p : get<1>(pto[ptoIndex]))
+        for (auto& p : std::get<1>(pto[ptoIndex]))
         {
-            p->set(!get<0>(pto[ptoIndex]));
+            p->set(!std::get<0>(pto[ptoIndex]));
         }
         // Get the motors that are not allowed to be driven
-        std::vector<int> notAllowed = get<2>(pto[ptoIndex]);
+        std::vector<int> notAllowed = std::get<2>(pto[ptoIndex]);
         // Loop through notAllowed and set the map pointers to reinvoke
         for (int i : notAllowed)
         {
@@ -390,7 +393,7 @@ public:
         CHAIN;
     }
     template <class T, size_t s>
-    chain_method operator=(array<T, s>& v)
+    chain_method operator=(std::array<T, s>& v)
     {
         m.clear();
         for (auto& l : v)
@@ -400,7 +403,7 @@ public:
         CHAIN;
     }
     template <class T, size_t s>
-    chain_method operator=(array<T, s>&& v)
+    chain_method operator=(std::array<T, s>&& v)
     {
         m.clear();
         for (auto& l : v)
