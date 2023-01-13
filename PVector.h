@@ -262,7 +262,7 @@ union PVector
         double dz = z - v.z;
         return sqrt(dx * dx + dy * dy + dz * dz);
     }
-    double dist(PVector v1)
+    double dist3D(PVector v1)
     {
         return sqrt(pow(x - v1.x, 2) + pow(y - v1.y, 2) + pow(z - v1.z, 2));
     }
