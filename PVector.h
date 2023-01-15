@@ -262,10 +262,6 @@ union PVector
         double dz = z - v.z;
         return sqrt(dx * dx + dy * dy + dz * dz);
     }
-    double dist(PVector v1)
-    {
-        return sqrt(pow(x - v1.x, 2) + pow(y - v1.y, 2) + pow(z - v1.z, 2));
-    }
     // Normalize a 2d vector
     chain_method normalize()
     {
@@ -307,9 +303,8 @@ union PVector
         return PVector(crossX, crossY, crossZ);
     }
     // Get headings
-    double heading2D()
+    double heading()
     {
-
         double angle = atan2(-x, y);
         return -radToDeg(angle);
     }
@@ -328,8 +323,8 @@ union PVector
     chain_method rotateXY(double r)
     {
         double m = this->distXY();
-        double sinTheta = sin(degToRad(this->heading2D() + r));
-        double cosTheta = cos(degToRad(this->heading2D() + r));
+        double sinTheta = sin(degToRad(this->heading() + r));
+        double cosTheta = cos(degToRad(this->heading() + r));
         x = sinTheta;
         y = cosTheta;
         x *= m;
@@ -380,7 +375,7 @@ union PVector
     {
         PVector newV = v;
         newV.sub(this);
-        return newV.heading2D();
+        return newV.heading();
     }
     // Overload operators
     chain_method operator+=(double a)
