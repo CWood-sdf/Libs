@@ -36,12 +36,12 @@ public:
         return index;
     }
 };
-class NewMotor
+class MotorGroup
 {
     int size = 0;
-    static inline std::map<motor*, std::vector<NewMotor*>> ptoMotors;
+    static inline std::map<motor*, std::vector<MotorGroup*>> ptoMotors;
     typedef motor motor_type;
-    typedef NewMotor& chain_method;
+    typedef MotorGroup& chain_method;
     std::vector<double> lastVoltCmd = {};
     std::vector<motor_type*> m = std::vector<motor_type*>();
     std::vector<std::tuple<bool, std::vector<pneumatics*>, std::vector<int>>> pto = {};
@@ -83,24 +83,41 @@ class NewMotor
             }
         }
     }
+    /**
+     * @brief Returns the index of the motor in the motor group
+     *
+     * @param m the motor to find
+     * @return int the index of the motor, -1 if not found
+     */
+    int indexOf(motor_type* m)
+    {
+        for (int i = 0; i < size; i++)
+        {
+            if (m == this->m[i])
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
 
 public:
     template <typename... args>
-    NewMotor(args*... a)
+    MotorGroup(args*... a)
     {
         addMotor(a...);
     }
     template <typename... args>
-    NewMotor(args&... a)
+    MotorGroup(args&... a)
     {
         addMotor(&a...);
     }
-    NewMotor()
+    MotorGroup()
     {
         m = std::vector<motor_type*>();
         lastVoltCmd = std::vector<double>();
     }
-    NewMotor(const NewMotor&) = default;
+    MotorGroup(const MotorGroup&) = default;
     /**
      * @brief Adds a pto on the given motors
      *
@@ -115,7 +132,7 @@ public:
         {
             if (i >= m.size())
             {
-                std::cerr << "NewMotor::addPto: Motor index out of range" << std::endl;
+                std::cerr << "MotorGroup::addPto: Motor index out of range" << std::endl;
                 return -1;
             }
         }
@@ -126,23 +143,12 @@ public:
             if (ptoMotors.count(m[i]) == 0)
             {
                 // Add the motor to ptoMotors
-                ptoMotors[m[i]] = std::vector<NewMotor*>();
+                ptoMotors[m[i]] = std::vector<MotorGroup*>();
             }
             ptoMotors[m[i]].push_back(this);
         }
         pto.push_back(make_tuple(desiredState, std::vector<pneumatics*>{&p}, motors));
         return pto.size() - 1;
-    }
-    int indexOf(motor_type* m)
-    {
-        for (int i = 0; i < size; i++)
-        {
-            if (m == this->m[i])
-            {
-                return i;
-            }
-        }
-        return -1;
     }
     /**
      * @brief Adds a pto on the given motors
@@ -160,18 +166,24 @@ public:
             int index = indexOf(mot);
             if (index < 0)
             {
-                std::cerr << "NewMotor::addPto: Motor not found" << std::endl;
+                std::cerr << "MotorGroup::addPto: Motor not found" << std::endl;
                 return -1;
             }
             motorIndexes.push_back(index);
         }
         return addPto(p, motorIndexes, desiredState);
     }
+    /**
+     * @brief Sets the given pto to the drive state and respins the motors
+     *
+     * @param ptoIndex the index of the pto
+     * @return chain_method
+     */
     chain_method setPtoDrive(int ptoIndex)
     {
         if (ptoIndex >= pto.size() || ptoIndex < 0)
         {
-            std::cerr << "NewMotor::setPtoDrive: PTO index out of range" << std::endl;
+            std::cerr << "MotorGroup::setPtoDrive: PTO index out of range" << std::endl;
             CHAIN;
         }
         // Loop through desired pto and set the pneumatics to the desired state
@@ -182,11 +194,17 @@ public:
         reinvokeLast();
         CHAIN;
     }
+    /**
+     * @brief Sets the given pto to the release state and respins the motors attached on the other end of the pto
+     *
+     * @param ptoIndex the index of the pto
+     * @return chain_method
+     */
     chain_method setPtoRelease(int ptoIndex)
     {
         if (ptoIndex >= pto.size() || ptoIndex < 0)
         {
-            std::cerr << "NewMotor::setPtoRelease: PTO index out of range" << std::endl;
+            std::cerr << "MotorGroup::setPtoRelease: PTO index out of range" << std::endl;
             CHAIN;
         }
         // Loop through desired pto and set the pneumatics to the opposite of the desired state
@@ -213,12 +231,22 @@ public:
         }
         CHAIN;
     }
+    /**
+     * @brief Gets the specified motor from the index
+     *
+     * @param n the index of the motor
+     * @return motor_type&
+     */
     motor_type& operator[](int n)
     {
         return *m[n];
     }
-
-    // Stop all the motors, but only the ones that are false in the exceptions list
+    /**
+     * @brief Gets the specified motor from the index
+     *
+     * @param n the index of the motor
+     * @return motor_type&
+     */
     void stop(brakeType brak, std::vector<bool> exceptions)
     {
         int i = 0;
@@ -235,9 +263,12 @@ public:
 
     void stop()
     {
+        setPtoAllowed();
+        int i = 0;
         for (auto n : m)
         {
-            n->stop();
+            if (allowedMotors[i++])
+                n->stop();
         }
         lastVoltCmd = std::vector<double>(size, 0.0);
     }
