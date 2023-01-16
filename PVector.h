@@ -424,7 +424,7 @@ union PVector
     {
         x /= d;
         y /= d;
-        x /= d;
+        z /= d;
         CHAIN
     }
     chain_method operator=(PVector v)
