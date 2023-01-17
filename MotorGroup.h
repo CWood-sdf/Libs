@@ -25,16 +25,18 @@ namespace vex
     enum class percentUnits;
 }
 using namespace vex;
+class MotorGroup;
 class Pto
 {
+    friend class MotorGroup;
     int index = 0;
-
-public:
-    Pto(int i) : index(i) {}
     operator int()
     {
         return index;
     }
+
+public:
+    Pto(int i) : index(i) {}
 };
 class MotorGroup
 {
@@ -117,7 +119,8 @@ public:
         m = std::vector<motor_type*>();
         lastVoltCmd = std::vector<double>();
     }
-    MotorGroup(const MotorGroup&) = default;
+    MotorGroup(const MotorGroup&) = delete;
+    MotorGroup(MotorGroup&&) = delete;
     /**
      * @brief Adds a pto on the given motors
      *
@@ -126,7 +129,7 @@ public:
      * @param desiredState runs the motors if the pneumatics are in this state
      * @return int the index of the PTO, store it in a Pto object
      */
-    int addPto(pneumatics& p, std::vector<int> motors, bool desiredState = true)
+    Pto addPto(pneumatics& p, std::vector<int> motors, bool desiredState)
     {
         for (int i : motors)
         {
@@ -158,7 +161,7 @@ public:
      * @param desiredState runs the motors if the pneumatics are in this state
      * @return int the index of the PTO, store it in a Pto object
      */
-    int addPto(pneumatics& p, std::vector<motor*> motors, bool desiredState = true)
+    Pto addPto(pneumatics& p, std::vector<motor*> motors, bool desiredState)
     {
         std::vector<int> motorIndexes = {};
         for (motor* mot : motors)
@@ -179,8 +182,9 @@ public:
      * @param ptoIndex the index of the pto
      * @return chain_method
      */
-    chain_method setPtoDrive(int ptoIndex)
+    chain_method setPtoDrive(Pto ptoToUse)
     {
+        int ptoIndex = ptoToUse;
         if (ptoIndex >= pto.size() || ptoIndex < 0)
         {
             std::cerr << "MotorGroup::setPtoDrive: PTO index out of range" << std::endl;
@@ -200,8 +204,9 @@ public:
      * @param ptoIndex the index of the pto
      * @return chain_method
      */
-    chain_method setPtoRelease(int ptoIndex)
+    chain_method setPtoRelease(Pto ptoToUse)
     {
+        int ptoIndex = ptoToUse;
         if (ptoIndex >= pto.size() || ptoIndex < 0)
         {
             std::cerr << "MotorGroup::setPtoRelease: PTO index out of range" << std::endl;
@@ -242,25 +247,9 @@ public:
         return *m[n];
     }
     /**
-     * @brief Gets the specified motor from the index
+     * @brief stops all the motors with their default brake type
      *
-     * @param n the index of the motor
-     * @return motor_type&
      */
-    void stop(brakeType brak, std::vector<bool> exceptions)
-    {
-        int i = 0;
-        for (auto n : m)
-        {
-            if (i >= exceptions.size() || exceptions[i])
-            {
-                n->stop(brak);
-            }
-            i++;
-        }
-        lastVoltCmd = std::vector<double>(size, 0.0);
-    }
-
     void stop()
     {
         setPtoAllowed();
@@ -272,14 +261,21 @@ public:
         }
         lastVoltCmd = std::vector<double>(size, 0.0);
     }
-    // spin fwd
-    chain_method spin(directionType dir, int velocity, percentUnits v = pct)
+    /**
+     * @brief Spins the motors with the given direction and velocity
+     *
+     * @param dir the direction to spin the motors
+     * @param velocity the velocity to spin the motors
+     * @param v the units of the velocity
+     * @return chain_method
+     */
+    chain_method spin(directionType dir, double velocity, percentUnits v = pct)
     {
         setPtoAllowed();
         int i = 0;
         for (auto n : m)
         {
-            if (allowedMotors[i])
+            if (allowedMotors[i++])
             {
                 n->spin(dir, velocity, v);
             }
@@ -287,19 +283,14 @@ public:
         lastVoltCmd = std::vector<double>(size, velocity * (v == pct ? 1.0 : 120.0 / 100.0) * (dir == fwd ? 1.0 : -1.0));
         return *this;
     }
-    // spin a specific motor
-    chain_method spin(directionType dir, int velocity, int n)
-    {
-        setPtoAllowed();
-        if (allowedMotors[n])
-        {
-            m[n]->spin(dir, velocity, pct);
-        }
-        lastVoltCmd[n] = velocity * (pct == pct ? 1.0 : 120.0 / 100.0) * (dir == fwd ? 1.0 : -1.0);
-        return *this;
-    }
-    // spinVolt the motors, but only the ones that are false in the exceptions list
-    chain_method spinVolt(directionType dir, int velocity)
+    /**
+     * @brief Spins the motors at the specified percent velocity but on voltage units
+     *
+     * @param dir the direction to spin the motors
+     * @param velocityPct the percent velocity to spin the motors
+     * @return chain_method
+     */
+    chain_method spinVolt(directionType dir, int velocityPct)
     {
         setPtoAllowed();
         int i = 0;
@@ -307,80 +298,68 @@ public:
         {
             if (allowedMotors[i])
             {
-                n->spin(dir, velocity * 0.12, volt);
+                n->spin(dir, velocityPct * 0.12, volt);
             }
             i++;
         }
-        lastVoltCmd = std::vector<double>(size, velocity * 0.12 * (dir == fwd ? 1.0 : -1.0));
+        lastVoltCmd = std::vector<double>(size, velocityPct * 0.12 * (dir == fwd ? 1.0 : -1.0));
         return *this;
     }
-    // spinVolt a specific motor
-    chain_method spinVolt(directionType dir, int velocity, int n)
+    /**
+     * @brief Spins the motors at the specified percent velocities
+     *
+     * @param speeds The speeds to spin the motors at
+     * @return chain_method
+     */
+    chain_method seperateSpin(std::vector<double> speedsPct)
     {
         setPtoAllowed();
-        if (allowedMotors[n])
+        if (speedsPct.size() != m.size())
         {
-            m[n]->spin(dir, velocity * 12.0 / 100.0, volt);
+            std::cerr << "MotorGroup::seperateSpin: Speeds vector size does not match motor size" << std::endl;
+            return *this;
         }
-        lastVoltCmd[n] = velocity * 0.12 * (dir == fwd ? 1.0 : -1.0);
-        return *this;
-    }
-    // spin a specific motor
-    chain_method seperateSpin(std::vector<int> speeds)
-    {
-        setPtoAllowed();
         int i = 0;
         for (auto n : m)
         {
             if (allowedMotors[i])
             {
-                n->spin(fwd, speeds[i], pct);
+                n->spin(fwd, speedsPct[i], pct);
             }
-            lastVoltCmd[i] = (double)speeds[i] * 0.12;
+            lastVoltCmd[i] = (double)speedsPct[i] * 0.12;
             i++;
         }
 
         return *this;
     }
-    // wait for a certain amount of time
-    chain_method wait(int msec)
-    {
-        task::sleep(msec);
-        return *this;
-    }
-    // spin opposite directions
-    chain_method oppSpin(directionType dir, int velocity)
+    /**
+     * @brief Spins the motors at the specified percent velocities
+     *
+     * @param speeds The speeds to spin the motors at
+     * @return chain_method
+     */
+    chain_method seperateSpinVolt(std::vector<double> speedsPct)
     {
         setPtoAllowed();
+        if (speedsPct.size() != m.size())
+        {
+            std::cerr << "MotorGroup::seperateSpinVolt: Speeds vector size does not match motor size" << std::endl;
+            return *this;
+        }
         int i = 0;
-        if (dir == directionType::fwd)
+        for (auto n : m)
         {
-            repeat(size / 2)
+            if (allowedMotors[i])
             {
-                spin(fwd, velocity, iterator);
-                lastVoltCmd[iterator] = velocity * 0.12;
+                n->spin(fwd, speedsPct[i] * 0.12, volt);
             }
-            startRepeat(size / 2, size)
-            {
-                spin(vex::reverse, velocity, i);
-                lastVoltCmd[i] = velocity * 0.12;
-            }
+            lastVoltCmd[i] = (double)speedsPct[i] * 0.12;
+            i++;
         }
-        else
-        {
-            repeat(size / 2)
-            {
-                spin(vex::reverse, velocity, iterator);
-                lastVoltCmd[iterator] = velocity * 0.12;
-            }
-            startRepeat(size / 2, size)
-            {
-                spin(fwd, velocity, i);
-                lastVoltCmd[i] = velocity * 0.12;
-            }
-        }
-        CHAIN;
+
+        return *this;
     }
+
     // stop all motors
     chain_method stop(brakeType brak)
     {
@@ -396,51 +375,11 @@ public:
         lastVoltCmd = std::vector<double>(size, 0.0);
         return *this;
     }
-    void set(brakeType b)
+    void setBrakeMode(brakeType b)
     {
         for (auto n : m)
         {
             n->setStopping(b);
         }
-    }
-    template <class T>
-    chain_method operator=(std::vector<T>& v)
-    {
-        m.clear();
-        for (auto& l : v)
-        {
-            m.push_back((motor_type*)l);
-        }
-        CHAIN;
-    }
-    template <class T>
-    chain_method operator=(std::vector<T>&& v)
-    {
-        m.clear();
-        for (auto& l : v)
-        {
-            m.push_back((motor_type*)l);
-        }
-        CHAIN;
-    }
-    template <class T, size_t s>
-    chain_method operator=(std::array<T, s>& v)
-    {
-        m.clear();
-        for (auto& l : v)
-        {
-            m.push_back((motor_type*)l);
-        }
-        CHAIN;
-    }
-    template <class T, size_t s>
-    chain_method operator=(std::array<T, s>&& v)
-    {
-        m.clear();
-        for (auto& l : v)
-        {
-            m.push_back((motor_type*)l);
-        }
-        CHAIN;
     }
 };
