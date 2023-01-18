@@ -16,7 +16,6 @@ protected:
     int y;
     int width;
     int height;
-    void (*function)(void);
     string label;
     color fill;
     color fill2 = color(50, 50, 50);
