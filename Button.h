@@ -17,7 +17,7 @@ protected:
     int width;
     int height;
     string label;
-    color fill;
+    color fill = color(0, 0, 0);
     color fill2 = color(50, 50, 50);
     int xOff = 0;
     int yOff = 0;
@@ -30,9 +30,9 @@ public:
         y(y),
         width(width),
         height(height),
-        label(label),
-        fill(fill)
+        label(label)
     {
+        this->fill = fill;
         fill2 = fill; // sdfssd
     }
     explicit Button(brain& Brain, int x, int y, int width, int height, color fill, string label, int xOff, int yOff)
@@ -42,10 +42,10 @@ public:
         width(width),
         height(height),
         label(label),
-        fill(fill),
         xOff(xOff),
         yOff(yOff)
     {
+        this->fill = fill;
         fill2 = fill;
     }
     explicit Button(brain& Brain, int x, int y, int width, int height, color fill, color fill2, string label, int xOff = 0, int yOff = 0)
@@ -55,10 +55,10 @@ public:
         width(width),
         height(height),
         label(label),
-        fill(fill),
         xOff(xOff),
         yOff(yOff)
     {
+        this->fill = fill;
         this->fill2 = fill2;
     }
     explicit Button(Button& b, int x, int y) : Button(b)
