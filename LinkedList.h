@@ -126,12 +126,12 @@ public:
     }
 
     // Iterators
-    Iterator begin() const volatile
+    Iterator begin()
     {
         reset();
         return Iterator(base, current, (List*)this);
     }
-    Node* end() const volatile
+    Node* end()
     {
         return endn;
     }
