@@ -4,9 +4,10 @@
 namespace vex
 {
     class task;
+    class inertial;
 }
-template <class Tp>
-void gyroInit(Tp& Gyro)
+#ifndef NO_MAKE
+void gyroInit(vex::inertial& Gyro)
 {
     if (Gyro.installed())
     {
@@ -29,5 +30,7 @@ void gyroInit(Tp& Gyro)
         std::cout << "No Sensor" << std::endl;
     }
 }
-
+#else
+void gyroInit(vex::inertial& Gyro);
+#endif
 #endif // GYROINIT_H
