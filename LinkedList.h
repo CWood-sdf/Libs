@@ -40,9 +40,6 @@ class BasicLinkedList
     friend class RIterator;
 
 protected:
-    class Friend
-    {
-    };
     class ListNode;
     class Iterator;
     class RIterator;
@@ -136,12 +133,12 @@ public:
         return endn;
     }
 
-    RIterator rbegin() const volatile
+    RIterator rbegin()
     {
         resetEnd();
         return RIterator(endn, current, this);
     }
-    Node* rend() const volatile
+    Node* rend()
     {
         return base;
     }
@@ -260,20 +257,7 @@ public:
         base = endn = current = NULL;
         bound = false;
     }
-    /**
-     * @brief Strange constructor, all the arguments are parameters for the construction of one element's value
-     *
-     * @tparam Arg1
-     * @tparam Arg2
-     * @tparam Args
-     * @param a1
-     * @param a2
-     * @param args
-     */
-    template <typename Arg1, typename Arg2, typename... Args>
-    BasicLinkedList(Arg1 a1, Arg2 a2, Args... args) : BasicLinkedList(_Tp(a1, a2, args...))
-    {
-    }
+
     /**
      * @brief Construct a new empty Linked List object
      *
@@ -315,26 +299,9 @@ public:
     /**
      * @brief Construct a new Basic Linked List object
      *
-     * @param list list to copy
-     */
-    BasicLinkedList(BasicLinkedList& list)
-    {
-        constructor(list);
-    }
-    /**
-     * @brief Construct a new Basic Linked List object
-     *
      * @param llist list to copy
      */
     BasicLinkedList(const BasicLinkedList& llist)
-    {
-        constructor(llist);
-    }
-    BasicLinkedList(volatile BasicLinkedList& list)
-    {
-        constructor(list);
-    }
-    BasicLinkedList(const volatile BasicLinkedList& llist)
     {
         constructor(llist);
     }
@@ -357,11 +324,6 @@ public:
         if (!bound)
         {
             destructor();
-        }
-        else
-        {
-            int g = 0;
-            g++;
         }
     }
     /**
@@ -422,12 +384,6 @@ public:
             return emptyNode;
         return *endn;
     }
-    /*List getCopy() {
-        List ret = List();
-        ret.cconstructor(*this);
-        ret.bound = true;
-        return ret;
-    }*/
     /**
      * @brief Adds the new list after the current element
      *
