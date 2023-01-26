@@ -102,7 +102,6 @@ protected:
         }
     }
 
-public:
     /**
      * @brief calls basicPush<false>(val)
      *
@@ -112,6 +111,8 @@ public:
     {
         basicPush<false>(val);
     }
+
+public:
     /**
      * @brief calls basicPush<true>(val)
      *
@@ -244,7 +245,6 @@ protected:
         current = NULL;
     }
 
-public:
     /**
      * @brief Removes the objects ties to the list pointers without deleting the elements
      *
@@ -258,6 +258,7 @@ public:
         bound = false;
     }
 
+public:
     /**
      * @brief Construct a new empty Linked List object
      *
@@ -389,9 +390,9 @@ public:
      *
      * @param llist the list to add
      */
-    void addAfter(List& llist)
+    void addAfter(List llist)
     {
-        List newList = List(llist);
+        List& newList = llist;
         if (current == NULL)
         {
             current = base;
@@ -458,9 +459,9 @@ public:
      *
      * @param llist the list to add
      */
-    void addBefore(List& llist)
+    void addBefore(List llist)
     {
-        List newList = List(llist);
+        List& newList = llist;
         if (current == NULL)
         {
             current = base;
@@ -524,40 +525,24 @@ public:
     }
 
     /**
-     * @brief constructs a new element from the arguments and adds it to the end
+     * @brief adds the value to the end of the list
      *
-     * @tparam Arg1
-     * @tparam Arg2
-     * @tparam Args
-     * @param a1
-     * @param a2
-     * @param args
-     */
-    template <typename Arg1, typename Arg2, typename... Args>
-    void pushBack(Arg1 a1, Arg2 a2, Args... args)
-    {
-        pushBack(_Tp(a1, a2, args...));
-    }
-    /**
-     * @brief adds the element to the list
-     *
-     * @param val
+     * @param val the value to add
      */
     void pushBack(_Tp& val)
     {
         push(val);
     }
     /**
-     * @brief constructs a new element from the arguments and adds it to the beginning, only enabled if the list is not a pointer-ref
+     * @brief Adds a temporary value to the end of the list, only enabled if the list is not a pointer-ref
      *
      * @tparam r
-     * @param val
-     * @return std::enable_if<
-     * !std::is_same<_Tp, r*&>::value, void>::type
+     * @param val the value to add
+     * @return void if enabled
      */
     template <class r = RawTp>
     inline typename std::enable_if<
-        !std::is_same<_Tp, r*&>::value, void>::type
+        !std::is_same<_Tp, r&>::value && !std::is_same<_Tp, r*&>::value, void>::type
     pushBack(_Tp&& val)
     {
         movePush(val);
@@ -576,11 +561,11 @@ public:
      *
      * @param list the list to add
      */
-    void pushBack(List& list)
+    void pushBack(List list)
     {
         if (list.empty())
             return;
-        List addList = List(list);
+        List& addList = list;
         if (empty())
         {
             joinTo(addList);
@@ -592,21 +577,6 @@ public:
             endn = addList.endn;
         }
         addList.dissolve();
-    }
-    /**
-     * @brief constructs a new element from the arguments and adds it to the beginning
-     *
-     * @tparam Arg1
-     * @tparam Arg2
-     * @tparam Args
-     * @param a1
-     * @param a2
-     * @param args
-     */
-    template <typename Arg1, typename Arg2, typename... Args>
-    void pushBase(Arg1 a1, Arg2 a2, Args... args)
-    {
-        pushBase(_Tp(a1, a2, args...));
     }
     /**
      * @brief adds the element to the base of the list
@@ -632,16 +602,16 @@ public:
         }
     }
     /**
-     * @brief constructs a new element from the arguments and adds it to the beginning, only enabled if the list is not a pointer-ref
+     * @brief adds the temporary value to the start of the list
      *
      * @tparam r
-     * @param val
-     * @return std::enable_if<
-     * !std::is_same<_Tp, r*&>::value, void>::type
+     * @param val the value to add
+     * @return void if enabled
      */
+
     template <class r = RawTp>
     inline typename std::enable_if<
-        !std::is_same<_Tp, r*&>::value, void>::type
+        !std::is_same<_Tp, r&>::value && !std::is_same<_Tp, r*&>::value, void>::type
     pushBase(_Tp&& val)
     {
         pushBase(val);
@@ -733,6 +703,8 @@ public:
             base->prev = NULL;
         }
     }
+
+private:
     /**
      * @brief Reference (kinda) binds the list to the given list
      *
@@ -746,6 +718,8 @@ public:
         base = llist.base;
         current = llist.current;
     }
+
+public:
     /**
      * @brief Removes the current node, shifts the current node to the previous node
      *
@@ -884,14 +858,6 @@ public:
         constructor(llist);
         return *this;
     }
-    List& operator=(const volatile List& llist)
-    {
-        destructor();
-        bound = false;
-        constructor(llist);
-        bound = false;
-        return *this;
-    }
     List& operator=(List&& llist) noexcept
     {
         destructor();
@@ -915,27 +881,6 @@ private:
             return size(n->next) + 1;
         }
     }
-    bool size(Node* n, int& cSize, int wantSize)
-    {
-        if (n->next != NULL)
-        {
-            cSize++;
-            if (wantSize < cSize)
-            {
-                return false;
-            }
-            return size(n->next, cSize, wantSize);
-        }
-        else
-        {
-            if (wantSize - 1 == cSize)
-            {
-                return true;
-            }
-            return false;
-        }
-    }
-    int iters = 0;
 
 public:
     /**
@@ -949,26 +894,8 @@ public:
             return 0;
         return size(base) + 1;
     }
-    /**
-     * @brief Returns true if the list is of the given size
-     *
-     * @param wantSize the size to check
-     * @return true
-     * @return false
-     */
-    bool size(int wantSize)
-    {
-        int cSize = 0;
-        if (empty())
-        {
-            if (wantSize == 0)
-            {
-                return true;
-            }
-            return false;
-        }
-        return size(base, cSize, wantSize);
-    }
+
+private:
     /**
      * @brief Unbinds the list
      *
@@ -977,6 +904,8 @@ public:
     {
         bound = false;
     }
+
+public:
     /**
      * @brief Calls moveCurrentRight
      *
@@ -985,9 +914,7 @@ public:
     Node& operator++() const volatile
     {
         if (current == endn)
-        {
             return emptyNode;
-        }
         else if (current == NULL)
         {
             char* l = (char*)this;
@@ -1008,7 +935,7 @@ public:
      *
      * @return Node&
      */
-    Node& operator--()
+    Node& operator--() const volatile
     {
         if (current == base)
         {
@@ -1417,10 +1344,6 @@ namespace std
     {
     public:
         typedef BasicLinkedList<_Tp, _Tp&, _Tp*, _Tp> BaseList;
-        template <typename Arg1, typename Arg2, typename... Args>
-        LinkedList(Arg1 a1, Arg2 a2, Args... args) : BaseList(_Tp(a1, a2, args...))
-        {
-        }
         LinkedList() : BaseList()
         {
         }
@@ -1448,6 +1371,37 @@ namespace std
         {
         }
     };
+    template <class ref>
+    class LinkedList<ref&> : public BasicLinkedList<ref&, ref&, ref*, ref>
+    {
+        typedef ref& _Tp;
+
+    public:
+        typedef BasicLinkedList<_Tp, _Tp, ref*, ref> BaseList;
+        LinkedList() : BaseList()
+        {
+        }
+        LinkedList(_Tp seed) : BaseList(seed)
+        {
+        }
+        template <typename... Args>
+        LinkedList(_Tp e1, _Tp e2, Args... args) : BaseList(static_cast<_Tp>(args)...)
+        {
+            constructor(e1, e2);
+        }
+        LinkedList(LinkedList& list) : BaseList(list)
+        {
+        }
+        LinkedList(const LinkedList& llist) : BaseList(llist)
+        {
+        }
+        LinkedList(volatile LinkedList& list) : BaseList(list)
+        {
+        }
+        LinkedList(const volatile LinkedList& llist) : BaseList(llist)
+        {
+        }
+    };
     template <class ptref>
     class LinkedList<ptref*&> : public BasicLinkedList<ptref*&, ptref*&, ptref*, ptref>
     {
@@ -1455,10 +1409,6 @@ namespace std
 
     public:
         typedef BasicLinkedList<ptref*&, ptref*, ptref*, ptref> BaseList;
-        template <typename Arg1, typename Arg2, typename... Args>
-        LinkedList(Arg1 a1, Arg2 a2, Args... args) : BaseList(_Tp(a1, a2, args...))
-        {
-        }
         LinkedList()
         {
         }
@@ -1493,10 +1443,6 @@ namespace std
         typedef BasicLinkedList<pt*, pt*, pt*, pt> BaseList;
 
     public:
-        template <typename Arg1, typename Arg2, typename... Args>
-        LinkedList(Arg1 a1, Arg2 a2, Args... args) : BaseList(_Tp(a1, a2, args...))
-        {
-        }
         LinkedList() : BaseList()
         {
         }
