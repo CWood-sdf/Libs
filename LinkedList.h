@@ -388,9 +388,8 @@ public:
      * @brief Adds the new list after the current element
      *
      * @param llist the list to add
-     * @param moveToEnd moves the current element to the end of the list added
      */
-    void addAfter(List& llist, bool moveToEnd = false)
+    void addAfter(List& llist)
     {
         List newList = List(llist);
         if (current == NULL)
@@ -408,8 +407,6 @@ public:
             current->next = newList.base;
             newList.base->prev = current;
             endn = newList.endn;
-            if (moveToEnd)
-                current = endn;
         }
         else
         {
@@ -420,20 +417,17 @@ public:
             current->next->prev = current;
             next->prev = newList.endn;
             next->prev->next = next;
-            if (moveToEnd)
-                current = next;
         }
         newList.dissolve();
     }
     /**
      * @brief Adds an element after the current element
      *
-     * @param llist the element to add
-     * @param moveToEnd moves the current element to the end of the list added
+     * @param val the element to add
      */
-    void addAfter(_Tp llist, bool moveToEnd = false)
+    void addAfter(_Tp val)
     {
-        Node* newList = new Node(llist);
+        Node* newList = new Node(val);
         if (current == NULL)
         {
             current = base;
@@ -447,8 +441,6 @@ public:
             current->next = newList;
             newList->prev = current;
             endn = newList;
-            if (moveToEnd)
-                current = endn;
         }
         else
         {
@@ -459,17 +451,14 @@ public:
             current->next->prev = current;
             next->prev = newList;
             next->prev->next = next;
-            if (moveToEnd)
-                current = next;
         }
     }
     /**
      * @brief Adds the new list before the current element
      *
      * @param llist the list to add
-     * @param moveToBeg moves the current element to the beginning of the list added
      */
-    void addBefore(List& llist, bool moveToBeg = false)
+    void addBefore(List& llist)
     {
         List newList = List(llist);
         if (current == NULL)
@@ -487,8 +476,6 @@ public:
             current->prev = newList.endn;
             newList.endn->next = current;
             base = newList.base;
-            if (moveToBeg)
-                current = base;
         }
         else
         {
@@ -499,20 +486,17 @@ public:
             current->prev->next = current;
             prev->next = newList.base;
             prev->next->prev = prev;
-            if (moveToBeg)
-                current = prev;
         }
         newList.dissolve();
     }
     /**
      * @brief Adds an element before the current element
      *
-     * @param llist the element to add
-     * @param moveToBeg moves the current element to the beginning of the list added
+     * @param val the element to add
      */
-    void addBefore(_Tp llist, bool moveToBeg = false)
+    void addBefore(_Tp val)
     {
-        Node* newList = new Node(llist);
+        Node* newList = new Node(val);
         if (current == NULL)
         {
             current = base;
@@ -526,8 +510,6 @@ public:
             current->prev = newList;
             newList->next = current;
             base = newList;
-            if (moveToBeg)
-                current = base;
         }
         else
         {
@@ -538,8 +520,6 @@ public:
             current->prev->next = current;
             prev->next = newList;
             prev->next->prev = prev;
-            if (moveToBeg)
-                current = prev;
         }
     }
 
