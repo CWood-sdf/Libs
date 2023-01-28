@@ -50,7 +50,13 @@ public:
     typedef ListNode Node;
 
 protected:
-    inline static Node emptyNode = Node(false);
+    static Node* makeEmptyNode()
+    {
+        Node* node = (Node*)malloc(sizeof(Node));
+        node->isExistNode = false;
+        return node;
+    }
+    static Node* emptyNode;
     Node* base = NULL;
     Node* endn = NULL;
     Node* current = NULL;
@@ -336,7 +342,7 @@ public:
     Node& find(_Tp e)
     {
         if (empty())
-            return emptyNode;
+            return *emptyNode;
         auto n = base;
         while (n != endn)
         {
@@ -348,7 +354,7 @@ public:
         }
         if (n->value == e)
             return *n;
-        return emptyNode;
+        return *emptyNode;
     }
     /**
      * @brief Get the Current list element
@@ -359,7 +365,7 @@ public:
     {
         if (current == NULL)
         {
-            return emptyNode;
+            return *emptyNode;
         }
         return *current;
     }
@@ -371,7 +377,7 @@ public:
     Node& getBase()
     {
         if (base == NULL)
-            return emptyNode;
+            return *emptyNode;
         return *base;
     }
     /**
@@ -382,7 +388,7 @@ public:
     Node& getEnd()
     {
         if (endn == NULL)
-            return emptyNode;
+            return *emptyNode;
         return *endn;
     }
     /**
@@ -914,7 +920,7 @@ public:
     Node& operator++() const volatile
     {
         if (current == endn)
-            return emptyNode;
+            return *emptyNode;
         else if (current == NULL)
         {
             char* l = (char*)this;
@@ -939,7 +945,7 @@ public:
     {
         if (current == base)
         {
-            return emptyNode;
+            return *emptyNode;
         }
         else if (current == NULL)
         {
@@ -1073,15 +1079,12 @@ protected:
     Node* prev = NULL;
     // bool deletable = true;
     bool isExistNode = true;
-    ListNode(bool isExist)
-    {
-        isExistNode = isExist;
-    }
+
     /*void preventDel() {
         deletable = false;
     }*/
 public:
-    _Tp val = _Tp();
+    _Tp val;
     ListNode(Node* base, Node*& endn) : val(base->val)
     {
         if (base->next != NULL)
@@ -1097,9 +1100,8 @@ public:
     ListNode(_Tp& val) : val(val)
     {
     }
-    ListNode(_Tp&& val)
+    ListNode(_Tp&& val) : val(std::move(val))
     {
-        this->val = std::move(val);
     }
     ListNode(ListNode& n) : val(n.val)
     {
@@ -1131,7 +1133,7 @@ public:
     {
         if (next == NULL)
         {
-            return emptyNode;
+            return *emptyNode;
         }
         return *next;
     }
@@ -1144,7 +1146,7 @@ public:
     {
         if (prev == NULL)
         {
-            return emptyNode;
+            return *emptyNode;
         }
         return *prev;
     }
@@ -1337,6 +1339,8 @@ public:
     }
 };
 
+template <class T, class T2, class T3, class T4>
+typename BasicLinkedList<T, T2, T3, T4>::Node* BasicLinkedList<T, T2, T3, T4>::emptyNode = BasicLinkedList<T, T2, T3, T4>::makeEmptyNode();
 namespace std
 {
     template <class _Tp>
