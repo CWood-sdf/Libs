@@ -1,34 +1,35 @@
 #ifndef macros
 #define macros 1
 #pragma once
-//#ifndef waitUntil
-#define waitUntil(condition)                                         \
-  do {                                                               \
-    wait(5, msec);                                                   \
-  } while (!condition)
-//#endif //waitUntil
+// #ifndef waitUntil
+#define waitUntil(condition) \
+    do                       \
+    {                        \
+        wait(5, msec);       \
+    } while (!condition)
+// #endif //waitUntil
 //
 ////#ifndef sl
-//#define sl                                                           \
-//  vex::task::sleep (300);                                                      
+// #d efine sl                                                           \
+//  vex::task::sleep (300);
 ////#endif //sl
 
-//#define comma << ", " <<
+// #define comma << ", " <<
 //
 ////#ifndef cubout
-//#define cubeout                                                      \
+// #d efine cubeout                                                      \
 //  vex::task::sleep (500);
 ////#endif //co
 
-//#ifndef startRepeat
-#define startRepeat(start, end)                                      \
-  for (int i = start; i < end; i++)
+// #ifndef startRepeat
+#define startRepeat(start, end) \
+    for (int i = start; i < end; i++)
 // #endif
 
 // #ifndef repeat
-#define repeat(iterations)                                           \
-  for(int iterator = 0; iterator < iterations; iterator++) 
-//#endif //repeat
+#define repeat(iterations) \
+    for (int iterator = 0; iterator < iterations; iterator++)
+// #endif //repeat
 
 //#define to_infinity_and_beyond                                       \
 //  while(1)
@@ -43,26 +44,26 @@
 //   {n},{n},{n},{n},{n},{n},{n},{n},/**/{n},{n},{n},{n},{n},{n},{n},{n},/**/{n},{n},{n},{n},{n},{n},{n},{n},   \
 //     /**/{n},{n},{n},{n},{n},{n},{n},{n},/**/{n},{n},{n},{n},{n},{n},{n},{n},/**/{n},{n},{n},{n},{n},{n},{n},{n}
 
-//#define toString(num) #num
+// #define toString(num) #num
 
-//#define autSV 100
-//#define autS task::sleep(autSV); 
+// #define autSV 100
+// #define autS task::sleep(autSV);
 
-//Logical operators macros
-//#define and &&
-//#define or ||
-//#define not !
-//#define is ==
-//#define isnot !=
+// Logical operators macros
+// #define and &&
+// #define or ||
+// #define not !
+// #define is ==
+// #define isnot !=
 
 //#define output_while(condition) while(condition){ \
 //    task::sleep(10);
 //
-//#define END }
+// #define END }
 
 #define CHAIN return *this;
 //
-//#define DRIVE_MECHANUM \
+// #define DRIVE_MECHANUM \
 //double Y1 = abs(Greg.Axis3.value()) > sensitivity? Greg.Axis3.value() : 0;  \
 //double Y2 = abs(Greg.Axis2.value()) > sensitivity? Greg.Axis2.value() : 0;  \
 //double X1 = abs(Greg.Axis4.value()) > sensitivity? Greg.Axis4.value() : 0;  \
@@ -81,7 +82,7 @@
 //}       \
 //;
 //
-//#define DRIVE_MECHANUM2 \
+// #define DRIVE_MECHANUM2 \
 //double Y1 = abs(Greg.Axis3.value()) > sensitivity? Greg.Axis3.value() : 0;  \
 //double Y2 = abs(Greg.Axis2.value()) > sensitivity? Greg.Axis2.value() : 0;  \
 //double X1 = abs(Greg.Axis4.value()) > sensitivity? Greg.Axis4.value() : 0;  \
@@ -111,7 +112,7 @@
 //}       \
 //;
 //
-//#define DRIVE_OMNI2 \
+// #define DRIVE_OMNI2 \
 //double Y1 = abs(Greg.Axis3.value()) > sensitivity? Greg.Axis3.value() : 0;  \
 //double Y2 = abs(Greg.Axis2.value()) > sensitivity? Greg.Axis2.value() : 0;  \
 //double X1 = abs(Greg.Axis4.value()) > sensitivity? Greg.Axis4.value() : 0;  \
@@ -123,7 +124,7 @@
 //;
 //
 //
-//#define DRIVE_OMNI \
+// #define DRIVE_OMNI \
 //double Y1 = abs(Greg.Axis3.value()) > sensitivity? Greg.Axis3.value() : 0;  \
 //double Y2 = abs(Greg.Axis2.value()) > sensitivity? Greg.Axis2.value() : 0;  \
 //if(Y1 != 0 || Y2 != 0){    \
@@ -136,18 +137,21 @@
 //}       \
 //;
 //
-//#define randomSeed timer::systemHighResolution()
+// #define randomSeed timer::systemHighResolution()
 #endif
 
-#ifndef NO_MAKE
-void s(int time) {
+#ifdef MAKE
+void s(int time)
+{
     task::sleep(time);
 }
-template<typename Number>
-string parseInt(Number n) {
+template <typename Number>
+string parseInt(Number n)
+{
 
     char str[20];
-    if (n < 0) {
+    if (n < 0)
+    {
         string ret = "-";
         ret += parseInt(abs(n));
         return ret;
@@ -156,20 +160,22 @@ string parseInt(Number n) {
     return buf;
 }
 
-template<>
-string parseInt<string>(string n) {
+template <>
+string parseInt<string>(string n)
+{
     return n;
 }
-template<>
-string parseInt<const char*>(const char* n) {
+template <>
+string parseInt<const char*>(const char* n)
+{
     return n;
 }
-#else 
+#else
 void s(int);
-template<typename Number>
+template <typename Number>
 string parseInt(Number n);
-template<>
+template <>
 string parseInt<string>(string n);
-template<>
+template <>
 string parseInt<const char*>(const char* n);
 #endif

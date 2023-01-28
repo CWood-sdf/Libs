@@ -1,7 +1,7 @@
 #pragma once
 
 union PVector;
-#ifndef NO_MAKE
+#ifdef MAKE
 void windowsLoader(bool)
 {
     static PVector pos = PVector(0.0, 0.0);

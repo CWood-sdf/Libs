@@ -23,6 +23,19 @@ protected:
     bool pressedLast = false;
 
 public:
+    /**
+     * @brief Construct a new Button object
+     *
+     * @param Brain the brain screen to draw on
+     * @param x the x position
+     * @param y the y position
+     * @param width the width
+     * @param height the height
+     * @param fill the fill color
+     * @param label the label
+     * @param xOff the x offset of the label
+     * @param yOff the y offset of the label
+     */
     explicit Button(vex::brain& Brain, int x, int y, int width, int height, vex::color fill, string label, int xOff = 0, int yOff = 0)
       : Brain(Brain),
         x(x),
@@ -36,6 +49,20 @@ public:
         this->fill = fill.rgb();
         fill2 = fill.rgb();
     }
+    /**
+     * @brief Construct a new Button object
+     *
+     * @param Brain the brain screen to draw on
+     * @param x the x position
+     * @param y the y position
+     * @param width the width
+     * @param height the height
+     * @param fill the fill color
+     * @param fill2 the fill color when pressed
+     * @param label the label
+     * @param xOff the x offset of the label
+     * @param yOff the y offset of the label
+     */
     explicit Button(vex::brain& Brain, int x, int y, int width, int height, vex::color fill, vex::color fill2, string label, int xOff = 0, int yOff = 0)
       : Brain(Brain),
         x(x),

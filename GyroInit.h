@@ -6,7 +6,7 @@ namespace vex
     class task;
     class inertial;
 }
-#ifndef NO_MAKE
+#ifdef MAKE
 void gyroInit(vex::inertial& Gyro)
 {
     if (Gyro.installed())
