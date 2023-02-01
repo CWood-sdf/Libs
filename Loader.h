@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 union PVector;
 #ifdef MAKE

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #define BRAIN_WIDTH 480
 #define BRAIN_HEIGHT 220
 #include <string>

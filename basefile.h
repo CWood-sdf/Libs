@@ -1,4 +1,4 @@
-// #include BASE/files.h>
+﻿// #include BASE/files.h>
 // clang-format off
 #include BASE/Button.h>
 #include BASE/LinkedList.h>

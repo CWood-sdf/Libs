@@ -1,4 +1,4 @@
-#include <vector>
+﻿#include <vector>
 #define nmdefaultRot rotationUnits::rev
 #define vfor(it, v) \
     for (auto it : v)

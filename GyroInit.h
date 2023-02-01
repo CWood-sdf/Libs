@@ -1,4 +1,4 @@
-#ifndef GYROINIT_H
+﻿#ifndef GYROINIT_H
 #define GYROINIT_H
 #include <iostream>
 namespace vex

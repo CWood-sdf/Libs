@@ -1,4 +1,4 @@
-#ifndef PVECTOR_H
+﻿#ifndef PVECTOR_H
 #define PVECTOR_H
 #define CHAIN return *this;
 // Import mathematical header files
